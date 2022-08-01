@@ -31,33 +31,4 @@ macro "cylinderROI" {
     makePoint(centreCT[0], centreCT[1], "small yellow hybrid");
     makePoint(256, 256, "small green hybrid");
 
-    // setKeyDown("alt"); ct_z = getProfile();
-    // run("Plot Profile");
-
-    // ct_z_max = Array.findMaxima(ct_z,0.00001);
-    // ct_z_min = Array.findMinima(ct_z,0.00001);
-    // ct_z_half = (ct_z[ct_z_max[0]]+ct_z[ct_z_min[0]])/2;
-
-    // print(ct_z[ct_z_max[0]]);
-    // print(ct_z[ct_z_min[0]]);
-    // print((ct_z[ct_z_max[0]]+ct_z[ct_z_min[0]])/2);
-    
-    // for (i = 0; i < ct_x.length / 2; i++){
-    //     if (ct_x[i] < threshold){
-    //         lower = i;
-    //     }
-    //     if (ct_x[ct_x.length-i-1] < threshold){
-    //         upper = ct_x.length-i-1;
-    //     }
-    // }
-
-    // centre_z = (upper + lower)/ 2;
-
-    // print(lower);
-    // print(upper);
-    // print(centre_z);
-
-
-
-
 }

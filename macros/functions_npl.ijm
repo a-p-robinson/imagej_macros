@@ -25,15 +25,6 @@ function centreSliceCT(){
     ct_z_min = Array.findMinima(ct_z,0.00001);
     ct_z_half = (ct_z[ct_z_max[0]]+ct_z[ct_z_min[0]])/2;
     
-    // for (i = 0; i < ct_z.length / 2; i++){
-    //     if (ct_z[i] < ct_z_half){
-    //         lower = i;
-    //     }
-    //     if (ct_z[ct_z.length-i-1] < ct_z_half){
-    //         upper = ct_z.length-i-1;
-    //     }
-    // }
-
     centre_z = centreProfile(ct_z, ct_z_half);
     close();
     
