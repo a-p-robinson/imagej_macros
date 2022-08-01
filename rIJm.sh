@@ -8,7 +8,7 @@ IJ="/home/apr/Apps/Fiji.app/ImageJ-linux64 -macro "
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Where are our functions?
-INCLUDE_FILE="$DIR/macros/functions.ijm"
+INCLUDE_FILE="$DIR/macros/functions_npl.ijm"
 
 # What temp file shall we use?
 TMP_FILE="_run.ijm"
