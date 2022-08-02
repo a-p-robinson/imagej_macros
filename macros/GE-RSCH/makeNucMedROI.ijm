@@ -3,19 +3,18 @@ Transfer a CT based ROI to a nuclear medicine image
 */
 macro "makeNucMedROI" {
 
-    // Open the CT image
     cameraID = "DR";
     phantomID = "Cylinder";
+
+    // Open the CT image
     openCTData(cameraID, phantomID); 
 
     // Open the ROIs
-    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/DR_Cylinder_exact__RoiSet_XYZ.zip";
-    roiManager("Open",roiFile);
-
+    openCTROI(cameraID, phantomID);
+    
     // Open the Nuc Med reconstructed image
-    open("/home/apr/Science/GE-RSCH/QI/data/DicomData/DR/Cylinder/Recon/SPECTCT_EM2_IRAC001_DS.dcm");
-    rename("NM");
-    run("Fire");
+    openNMData(cameraID, phantomID);
+
 
     // Calculate the alignment of CT and NM in mm
     delta = calcNMCTalignment("NM", "CT");
@@ -32,7 +31,10 @@ macro "makeNucMedROI" {
     scaleROImanager(scale[0]);
 
     // Translate the ROIs from CT to NM in Z
-    
     ctToNMROImanager("NM", "CT", delta[2]);
+
+    // Save the ROI dataset
+    roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
+    roiManager("Save", roiDirectory + cameraID + "_" + phantomID + "_NM_RoiSet_XYZ.zip");
 
 }

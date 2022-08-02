@@ -3,19 +3,18 @@ Transfer a CT based ROI to a nuclear medicine image
 */
 macro "makeNucMedROI" {
 
-    // Open the CT image
     cameraID = "DR";
     phantomID = "Cylinder";
+
+    // Open the CT image
     openCTData(cameraID, phantomID); 
 
     // Open the ROIs
-    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/DR_Cylinder_exact__RoiSet_XYZ.zip";
-    roiManager("Open",roiFile);
-
+    openCTROI(cameraID, phantomID);
+    
     // Open the Nuc Med reconstructed image
-    open("/home/apr/Science/GE-RSCH/QI/data/DicomData/DR/Cylinder/Recon/SPECTCT_EM2_IRAC001_DS.dcm");
-    rename("NM");
-    run("Fire");
+    openNMData(cameraID, phantomID);
+
 
     // Calculate the alignment of CT and NM in mm
     delta = calcNMCTalignment("NM", "CT");
@@ -32,8 +31,11 @@ macro "makeNucMedROI" {
     scaleROImanager(scale[0]);
 
     // Translate the ROIs from CT to NM in Z
-    
     ctToNMROImanager("NM", "CT", delta[2]);
+
+    // Save the ROI dataset
+    roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
+    roiManager("Save", roiDirectory + cameraID + "_" + phantomID + "_NM_RoiSet_XYZ.zip");
 
 } 
 // ***********************************************************************
@@ -51,28 +53,58 @@ function openCTData(cameraID, phantomID){
     if (cameraID == "DR" && phantomID == "Cylinder"){
         CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/DR/Cylinder/CT/CTSoftTissue1.25mmSPECTCT_H_1001_CT001.dcm";
         CTslices = 321;
-        run("Image Sequence...", "open=" + CTfile + " number=" + CTslices + " starting=1 increment=1 scale=100 file=[] sort");
     }
 
     if (cameraID == "CZT-WEHR" && phantomID == "Cylinder"){
         CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/WEHR/Cylinder/CT/CTAC5mmCYLINDER_H_1001_CT001.dcm";
         CTslices = 80;
-        run("Image Sequence...", "open=" + CTfile + " number=" + CTslices + " starting=1 increment=1 scale=100 file=[] sort");
     }
 
     if (cameraID == "CZT-MEHRS" && phantomID == "Cylinder"){
         CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/MEHRS/Cylinder/CT/CTAC5mmCYLINDER_H_1001_CT001.dcm";
         CTslices = 80;
-        run("Image Sequence...", "open=" + CTfile + " number=" + CTslices + " starting=1 increment=1 scale=100 file=[] sort");
     }
 
     if (cameraID == "Optima" && phantomID == "Cylinder"){
         CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/Optima/Cylinder/CT/CTSPECT-CT_H_1001_CT001.dcm";
         CTslices = 161;
-        run("Image Sequence...", "open=" + CTfile + " number=" + CTslices + " starting=1 increment=1 scale=100 file=[] sort");
+
     }
 
+    run("Image Sequence...", "open=" + CTfile + " number=" + CTslices + " starting=1 increment=1 scale=100 file=[] sort");
     rename("CT");
+}
+
+// Open the CT ROI
+function openCTROI(cameraID, phantomID){
+
+    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_RoiSet_XYZ.zip";
+    roiManager("Open",roiFile);
+
+}
+
+// Open the correct NM image for the specified dataset
+function openNMData(cameraID, phantomID){
+
+    if (cameraID == "DR" && phantomID == "Cylinder"){
+        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/DR/Cylinder/Recon/SPECTCT_EM2_IRAC001_DS.dcm";
+    }
+
+    if (cameraID == "CZT-WEHR" && phantomID == "Cylinder"){
+        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/WEHR/Cylinder/Recon/CYLINDER_EM2_IRAC001_DS.dcm";
+    }
+
+    if (cameraID == "CZT-MEHRS" && phantomID == "Cylinder"){
+        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/MEHRS/Cylinder/Recon/CYLINDER_EM2_IRAC001_DS.dcm";
+    }
+
+    if (cameraID == "Optima" && phantomID == "Cylinder"){
+        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/Optima/Cylinder/Recon/SPECT-CT_EM2_IRAC001_DS.dcm";      
+    }
+
+    open(NMfile);
+    rename("NM");
+    run("Fire");
 }
 
 // Return the centre slice of a CT image based on the profile
@@ -138,6 +170,14 @@ function createCylinder(x, y, z, R, H){
     if (ns%2 == 0){
         first_slice = z - floor(ns/2);
         last_slice  = z + floor(ns/2) - 1;
+    }
+
+    // Check we haven't gone off the end of image
+    if(first_slice < 0){
+        first_slice = 1;
+    }
+    if(last_slice > nSlices){
+        last_slice = nSlices;
     }
     // print("First: " + first_slice + " Last: :" + last_slice);
     // print(floor(ns/2));
@@ -231,12 +271,12 @@ function calcNMCTscale(NMname, CTname){
 function translateROImanagerdXdY(dX, dY){
     count = roiManager("count"); 
     current = roiManager("index"); 
-    print("transdXdY start = " + current);
+    //print("transdXdY start = " + current);
     
     for (i = 0; i < count; i++) { 
 	    roiManager("select", i);
 	
-	    print("[" + i + "] Current Slice = " + getSliceNumber());
+	    //print("[" + i + "] Current Slice = " + getSliceNumber());
 
 	    // Translate in X and Y
 	    translateROIdXdY(dX, dY); 
@@ -258,10 +298,10 @@ function translateROIdXdY(dX, dY) {
     //print("shift = " + dX + " " + dY);
 
     for (i = 0; i < x.length; i++) { 
-        print ("Old = " + x[i] + " :" + y[i]);
+       //print ("Old = " + x[i] + " :" + y[i]);
         x[i] = x[i] + dX; 
         y[i] = y[i] + dY; 
-        print ("New = " + x[i] + " :" + y[i]);
+        //print ("New = " + x[i] + " :" + y[i]);
     } 
     makeSelection(type, x, y); 
 
@@ -273,15 +313,15 @@ function translateROIdXdY(dX, dY) {
 function scaleROImanager(factor){
     count = roiManager("count"); 
     current = roiManager("index"); 
-    print("scale start = " + current);
+    //print("scale start = " + current);
 
     for (i = 0; i < count; i++) { 
         roiManager("select", i);
-        print("selected " + i);
+        //print("selected " + i);
         scaleROI(factor); 
-        print("scaled " + i);
+        //print("scaled " + i);
         roiManager("update");
-        print("updated " + i);
+        //print("updated " + i);
     }
 }
 //------------------------------------------------------------------
@@ -316,6 +356,8 @@ function ctToNMROImanager(NMname, CTname, dZ){
     // Extract the voxel sizes
     selectWindow(NMname);
     getVoxelSize(nm_width, nm_height, nm_depth, nm_unit);
+    nmSlicesMax = nSlices;
+    print(nmSlicesMax);
     selectWindow(CTname);
     getVoxelSize(ct_width, ct_height, ct_depth, ct_unit);
 
@@ -324,20 +366,74 @@ function ctToNMROImanager(NMname, CTname, dZ){
 
     count = roiManager("count"); 
     current = roiManager("index"); 
-    //print("transdZ start = " + current);
+
     for (i = 0; i < count; i++) { 
+        selectWindow("CT");
         roiManager("select", 0); // New ROI goes to bottom so always pick "top" next
         ctSlice = getSliceNumber();
         nmSlice = (ctSlice + dZ) * abs(ct_depth / nm_depth);
+    
+        // Check we are not going off the end of the NM image
+        if (round(nmSlice) > nmSlicesMax-1){
+            nmSlice = nmSlicesMax-1;
+        }
+
         print("[" + i +"] CT Slice: " + ctSlice + " ---> NM Slice: " + nmSlice + " (" + round(nmSlice) + ")" );
 
-        moveROIslice(nmSlice);
-        //print("count in loop = " + count + " i = " + i);
-        // Translate in Z
-        //ctToNMmoveROI(dZ); 
-        //roiManager("update");
+        selectWindow("NM");
+        moveROIslice(round(nmSlice));
+
     }
 
+    // Now merge the ROIS on the same slice
+    currentSlice = -99;
+    //print("will process " + count + " rois");
+    for (i = 0; i < count; i++) { 
+        //print("i="+i);
+        roiManager("select", i);
+        thisSlice = getSliceNumber();
+
+        if (i == 0){
+            currentSlice = thisSlice;
+            mergeArray = newArray(1);
+            mergeArray[0] = 0;
+        }
+        else{            
+            if (thisSlice == currentSlice){
+                // Add to the array of slices to merge
+                mergeArray = Array.concat(mergeArray, i);
+            }
+            if ((thisSlice > currentSlice) || (i == count-1)){
+                // Merge the array and set current slice
+                //print(thisSlice + " > " + currentSlice);
+                //print("Will merge ROIs:");
+                //Array.print(mergeArray);
+
+                currentSlice = thisSlice;
+
+                // Do the merge
+                if(mergeArray.length > 1){
+                    roiManager("select", mergeArray);
+                    roiManager("Or");
+                    roiManager("Add");
+                }
+                else{
+                    // We may have a single ROI ona  slice in which we don't need to merge
+                    roiManager("select", mergeArray);
+                    roiManager("Add");
+                }
+                // Reset array
+                mergeArray = newArray(1);
+                mergeArray[0] = i;
+            }
+        }
+    }
+
+    // Delete the original ROIS (can I do this in one loop?)
+    for (i = 0; i < count; i++) { 
+        roiManager("select", 0);
+        roiManager("delete");
+    }
 }
 //------------------------------------------------------------------
 
@@ -352,62 +448,6 @@ function moveROIslice(nmSlice){
     // Calculate the new slice
     roiManager("Remove Slice Info");
     setSlice(nmSlice);
-
-    //print("Processing roi " + called);
-    //print("Moving " + oldSlice + " to " + oldSlice + shift);
-    //print("Now on slice " + getSliceNumber());
-
-    // Move the ROI to the current slice
-     roiManager("select", called);
-     roiManager("Add");
-
-     // Delete the old ROI we were called with
-     roiManager("select", called);
-     roiManager("Delete");
-} 
-//------------------------------------------------------------------
-
-//------------------------------------------------------------------
-// Loop through ROI manger and translate all ROIs
-// We can move the ROIs by an amount dZ through the stack
-// All values in mm
-function translateROImanagerdZ(dZ){
-    count = roiManager("count"); 
-    current = roiManager("index"); 
-    //print("transdZ start = " + current);
-    for (i = 0; i < count; i++) { 
-        roiManager("select", 0); // New ROI goes to bottom so always pick "top" next
-        //print("count in loop = " + count + " i = " + i);
-        // Translate in Z
-        translateROIdZ(dZ); 
-        //roiManager("update");
-    }
-
-}
-//------------------------------------------------------------------
-
-//------------------------------------------------------------------
-// Translate the selected ROI (will remove and old ROI)
-// Position is in mm
-function translateROIdZ(dZ) { 
-
-    // Calculate number of slices to shift ROIS
-    getVoxelSize(width, height, depth, unit);
-    shift = round(dZ / depth);
-    //print("dZ = " + dZ + " = " + shift + " voxels");
-
-    // Store the ROi we were called with
-    called = roiManager("index"); 
-    //called = 0;    
-
-    // Calculate the new slice
-    roiManager("Remove Slice Info");
-    oldSlice = getSliceNumber();
-    setSlice(oldSlice + shift);
-
-    //print("Processing roi " + called);
-    //print("Moving " + oldSlice + " to " + oldSlice + shift);
-    //print("Now on slice " + getSliceNumber());
 
     // Move the ROI to the current slice
      roiManager("select", called);
