@@ -3,11 +3,10 @@
  */
 macro "cylinderROI" {
 
-
     // Open the CT image
-    CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/DR/Cylinder/CT/CTSoftTissue1.25mmSPECTCT_H_1001_CT001.dcm";
-    CTslices = 321;
-    run("Image Sequence...", "open=" + CTfile + " number=" + CTslices + " starting=1 increment=1 scale=100 file=[] sort");
+    cameraID = "CZT-WEHR";
+    phantomID = "Cylinder";
+    openCTData(cameraID, phantomID); 
 
     // Find the centre in Z
     selectWindow("CT");
@@ -16,48 +15,32 @@ macro "cylinderROI" {
 
     // Find centre in x and y
     setSlice(centreCT[2]);
-    threshold = -50;
 
     getDimensions(width, height, channels, slices, frames);
     makeRectangle(0, 0, width, height);
     ct_x = getProfile();
-    setKeyDown("alt"); ct_y = getProfile();
 
+    selectWindow("CT");
+    setKeyDown("alt"); ct_y = getProfile();
+ 
+    threshold = -1200;
     centreCT[0] = centreProfile(ct_x, threshold);
+    threshold = -700;
     centreCT[1] = centreProfile(ct_y, threshold);
 
     Array.print(centreCT);
 
-    makePoint(centreCT[0], centreCT[1], "small yellow hybrid");
-    makePoint(256, 256, "small green hybrid");
+    // Make ROIS
+    // 	Cylinder inside diameter: 21.6 cm * 130 % = 28.08 cm
+    // 	Cylinder inside height: 18.6 cm * 120 % = 22.32 cm
+    phantomRadius = 216 * 1.3 / 2.0;
+    phantomHeight = 186 * 1.2;
+    selectWindow("CT");
+    createCylinder(centreCT[0], centreCT[1], centreCT[2], phantomRadius, phantomHeight);
 
-    // setKeyDown("alt"); ct_z = getProfile();
-    // run("Plot Profile");
-
-    // ct_z_max = Array.findMaxima(ct_z,0.00001);
-    // ct_z_min = Array.findMinima(ct_z,0.00001);
-    // ct_z_half = (ct_z[ct_z_max[0]]+ct_z[ct_z_min[0]])/2;
-
-    // print(ct_z[ct_z_max[0]]);
-    // print(ct_z[ct_z_min[0]]);
-    // print((ct_z[ct_z_max[0]]+ct_z[ct_z_min[0]])/2);
-    
-    // for (i = 0; i < ct_x.length / 2; i++){
-    //     if (ct_x[i] < threshold){
-    //         lower = i;
-    //     }
-    //     if (ct_x[ct_x.length-i-1] < threshold){
-    //         upper = ct_x.length-i-1;
-    //     }
-    // }
-
-    // centre_z = (upper + lower)/ 2;
-
-    // print(lower);
-    // print(upper);
-    // print(centre_z);
-
-
+    // Save the ROI dataset
+    roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
+    roiManager("Save", roiDirectory + cameraID + "_" + phantomID + "_RoiSet_XYZ.zip");
 
 
 } 
@@ -70,13 +53,31 @@ macro "cylinderROI" {
 // * Revised APR: 01/08/22
 // ***********************************************************************
 
+// Open the correct CT image for the specified dataset
+function openCTData(cameraID, phantomID){
+
+    if (cameraID == "DR" && phantomID == "Cylinder"){
+        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/DR/Cylinder/CT/CTSoftTissue1.25mmSPECTCT_H_1001_CT001.dcm";
+        CTslices = 321;
+        run("Image Sequence...", "open=" + CTfile + " number=" + CTslices + " starting=1 increment=1 scale=100 file=[] sort");
+    }
+
+    if (cameraID == "CZT-WEHR" && phantomID == "Cylinder"){
+        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/WEHR/Cylinder/CT/CTAC5mmCYLINDER_H_1001_CT001.dcm";
+        CTslices = 80;
+        run("Image Sequence...", "open=" + CTfile + " number=" + CTslices + " starting=1 increment=1 scale=100 file=[] sort");
+    }
+
+    rename("CT");
+}
+
 // Return the centre slice of a CT image based on the profile
 function centreSliceCT(){
 
     // Get slice thickness 
     getVoxelSize(width, height, depth, unit);
     
-    run("Reslice [/]...", "output="+depth+" start=Top");
+    run("Reslice [/]...", "output="+depth+" start=Top avoid");
     selectWindow("Reslice of CT");
     setSlice(nSlices()/2);
     getDimensions(width, height, channels, slices, frames);
@@ -88,19 +89,10 @@ function centreSliceCT(){
     ct_z_min = Array.findMinima(ct_z,0.00001);
     ct_z_half = (ct_z[ct_z_max[0]]+ct_z[ct_z_min[0]])/2;
     
-    // for (i = 0; i < ct_z.length / 2; i++){
-    //     if (ct_z[i] < ct_z_half){
-    //         lower = i;
-    //     }
-    //     if (ct_z[ct_z.length-i-1] < ct_z_half){
-    //         upper = ct_z.length-i-1;
-    //     }
-    // }
-
     centre_z = centreProfile(ct_z, ct_z_half);
     close();
     
-    return centre_z;
+    return round(centre_z);
 }
 
 // Return the centre of a profile based on values passing threshold twice
@@ -115,6 +107,62 @@ function centreProfile(profile, threshold){
         }
     }
     centre = (upper + lower) / 2;
-
+    //print("lower: " + lower + " upper: " + upper + " centre: " + centre);
     return centre;
+}
+
+//------------------------------------------------------------------
+// Generate cylindrical VOI data on the open image centered on (x,y,z)
+//  - x,y,z are given in terms of slice or voxel
+//  - R is the radius in mm
+//  - H is the height in mm
+function createCylinder(x, y, z, R, H){
+
+    // Get image stats
+    getVoxelSize(width, height, depth, unit);
+  
+    // See how many slices we need
+    ns = round(H / depth);
+    print("H = " + H + " nSlices = " + ns + " depth = " + depth);
+
+    // If this is odd then we add an even number of slices either slide of z
+    // If it is even then we have to go 1 more slice on one slide or the other...!
+    if (ns%2 == 1){
+        first_slice = z - floor(ns/2);
+        last_slice  = z + floor(ns/2);
+    }
+    if (ns%2 == 0){
+        first_slice = z - floor(ns/2);
+        last_slice  = z + floor(ns/2) - 1;
+    }
+    // print("First: " + first_slice + " Last: :" + last_slice);
+    // print(floor(ns/2));
+    // print(z);
+
+    for (i = first_slice; i <= last_slice; i++){
+        createCircle(x, y, i, R);
+    }
+	    
+}
+
+//------------------------------------------------------------------
+// Generate circular ROI data on the open image centered on (x,y,z)
+//  - x,y,z are given in terms of slice or voxel
+//  - R is the radius in mm
+function createCircle(x, y, z, R){
+
+    // Get image stats
+    getVoxelSize(width, height, depth, unit);
+    // width = abs(width);
+    // height = abs(height);
+    // depth = abs(depth);
+    
+    // Convert R to voxels
+    r = R / width;
+    //print("Radius = " + R + " mm = " + r + " voxels");
+	
+    setSlice(z);
+    makeOval(x-r, y-r, 2*r, 2*r);
+	roiManager("Add");
+	    
 }

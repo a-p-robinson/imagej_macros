@@ -3,11 +3,10 @@
  */
 macro "cylinderROI" {
 
-
     // Open the CT image
-    CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/DR/Cylinder/CT/CTSoftTissue1.25mmSPECTCT_H_1001_CT001.dcm";
-    CTslices = 321;
-    run("Image Sequence...", "open=" + CTfile + " number=" + CTslices + " starting=1 increment=1 scale=100 file=[] sort");
+    cameraID = "CZT-WEHR";
+    phantomID = "Cylinder";
+    openCTData(cameraID, phantomID); 
 
     // Find the centre in Z
     selectWindow("CT");
@@ -16,19 +15,32 @@ macro "cylinderROI" {
 
     // Find centre in x and y
     setSlice(centreCT[2]);
-    threshold = -50;
 
     getDimensions(width, height, channels, slices, frames);
     makeRectangle(0, 0, width, height);
     ct_x = getProfile();
-    setKeyDown("alt"); ct_y = getProfile();
 
+    selectWindow("CT");
+    setKeyDown("alt"); ct_y = getProfile();
+ 
+    threshold = -1200;
     centreCT[0] = centreProfile(ct_x, threshold);
+    threshold = -700;
     centreCT[1] = centreProfile(ct_y, threshold);
 
     Array.print(centreCT);
 
-    makePoint(centreCT[0], centreCT[1], "small yellow hybrid");
-    makePoint(256, 256, "small green hybrid");
+    // Make ROIS
+    // 	Cylinder inside diameter: 21.6 cm * 130 % = 28.08 cm
+    // 	Cylinder inside height: 18.6 cm * 120 % = 22.32 cm
+    phantomRadius = 216 * 1.3 / 2.0;
+    phantomHeight = 186 * 1.2;
+    selectWindow("CT");
+    createCylinder(centreCT[0], centreCT[1], centreCT[2], phantomRadius, phantomHeight);
+
+    // Save the ROI dataset
+    roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
+    roiManager("Save", roiDirectory + cameraID + "_" + phantomID + "_RoiSet_XYZ.zip");
+
 
 }
