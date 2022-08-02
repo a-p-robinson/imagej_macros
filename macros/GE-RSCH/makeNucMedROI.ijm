@@ -3,8 +3,20 @@ Transfer a CT based ROI to a nuclear medicine image
 */
 macro "makeNucMedROI" {
 
-    cameraID = "DR";
-    phantomID = "Cylinder";
+    // Get the data names from arguments
+    args = split(getArgument(), " ");
+
+    if (args.length != 2){
+        print("ERROr: must specify 2 arguments (camera phantom");
+        Array.print(args);
+        exit();
+    }
+
+    cameraID = args[0];
+    phantomID = args[1];
+
+    // cameraID = "DR";
+    // phantomID = "Cylinder";
 
     // Open the CT image
     openCTData(cameraID, phantomID); 

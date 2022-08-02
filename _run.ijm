@@ -1,41 +1,66 @@
 /* 
-Transfer a CT based ROI to a nuclear medicine image
+Define a cylindrical ROI based on the centre of the phantom using CT
 */
-macro "makeNucMedROI" {
+macro "cylinderROI" {
 
-    cameraID = "DR";
-    phantomID = "Cylinder";
+    // Get the data names from arguments
+    args = split(getArgument(), " ");
+
+    if (args.length != 2){
+        print("ERROr: must specify 2 arguments (camera phantom");
+        Array.print(args);
+        exit();
+    }
+
+    cameraID = args[0];
+    phantomID = args[1];
 
     // Open the CT image
+    // cameraID = "DR";
+    // phantomID = "Cylinder";
     openCTData(cameraID, phantomID); 
 
-    // Open the ROIs
-    openCTROI(cameraID, phantomID);
-    
-    // Open the Nuc Med reconstructed image
-    openNMData(cameraID, phantomID);
-
-
-    // Calculate the alignment of CT and NM in mm
-    delta = calcNMCTalignment("NM", "CT");
-    scale = calcNMCTscale("NM", "CT");
-    Array.print(delta);
-    Array.print(scale);
-
-    // Translate the ROIs from CT to NM in X and Y
+    // Find the centre in Z
     selectWindow("CT");
-    translateROImanagerdXdY(delta[0], delta[1]);
-    
-    // Scale the ROIS to NM on CT (most accrate)
-    selectWindow("CT");
-    scaleROImanager(scale[0]);
+    centreCT = newArray(3);
+    centreCT[2] = centreSliceCT();
 
-    // Translate the ROIs from CT to NM in Z
-    ctToNMROImanager("NM", "CT", delta[2]);
+    // Find centre in x and y
+    setSlice(centreCT[2]);
+
+    getDimensions(width, height, channels, slices, frames);
+    makeRectangle(0, 0, width, height);
+    ct_x = getProfile();
+
+    selectWindow("CT");
+    setKeyDown("alt"); ct_y = getProfile();
+    
+
+    threshold = -1200;
+    centreCT[0] = centreProfile(ct_x, threshold);
+    threshold = -700;
+    centreCT[1] = centreProfile(ct_y, threshold);
+
+    Array.print(centreCT);
+
+    // Make ROIS
+    // 	Cylinder inside diameter: 21.6 cm * 130 % = 28.08 cm
+    // 	Cylinder inside height: 18.6 cm * 120 % = 22.32 cm
+    phantomRadius = 216 * 1.3 / 2.0;
+    phantomHeight = 186 * 1.2;
+    //phantomRadius = 216  / 2.0;
+    //phantomHeight = 186;
+
+    selectWindow("CT");
+    run("Select None");
+    roiManager("reset");
+
+    createCylinder(centreCT[0], centreCT[1], centreCT[2], phantomRadius, phantomHeight);
 
     // Save the ROI dataset
     roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
-    roiManager("Save", roiDirectory + cameraID + "_" + phantomID + "_NM_RoiSet_XYZ.zip");
+    roiManager("Save", roiDirectory + cameraID + "_" + phantomID + "_RoiSet_XYZ.zip");
+
 
 } 
 // ***********************************************************************

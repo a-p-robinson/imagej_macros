@@ -3,9 +3,21 @@ Define a cylindrical ROI based on the centre of the phantom using CT
 */
 macro "cylinderROI" {
 
+    // Get the data names from arguments
+    args = split(getArgument(), " ");
+
+    if (args.length != 2){
+        print("ERROr: must specify 2 arguments (camera phantom");
+        Array.print(args);
+        exit();
+    }
+
+    cameraID = args[0];
+    phantomID = args[1];
+
     // Open the CT image
-    cameraID = "DR";
-    phantomID = "Cylinder";
+    // cameraID = "DR";
+    // phantomID = "Cylinder";
     openCTData(cameraID, phantomID); 
 
     // Find the centre in Z
