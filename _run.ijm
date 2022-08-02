@@ -1,47 +1,39 @@
-/* Define a cylindrical ROI based on the centre of the phantom
-
- */
-macro "cylinderROI" {
+/* 
+Transfer a CT based ROI to a nuclear medicine image
+*/
+macro "makeNucMedROI" {
 
     // Open the CT image
-    cameraID = "CZT-WEHR";
+    cameraID = "DR";
     phantomID = "Cylinder";
     openCTData(cameraID, phantomID); 
 
-    // Find the centre in Z
+    // Open the ROIs
+    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/DR_Cylinder_exact__RoiSet_XYZ.zip";
+    roiManager("Open",roiFile);
+
+    // Open the Nuc Med reconstructed image
+    open("/home/apr/Science/GE-RSCH/QI/data/DicomData/DR/Cylinder/Recon/SPECTCT_EM2_IRAC001_DS.dcm");
+    rename("NM");
+    run("Fire");
+
+    // Calculate the alignment of CT and NM in mm
+    delta = calcNMCTalignment("NM", "CT");
+    scale = calcNMCTscale("NM", "CT");
+    Array.print(delta);
+    Array.print(scale);
+
+    // Translate the ROIs from CT to NM in X and Y
     selectWindow("CT");
-    centreCT = newArray(3);
-    centreCT[2] = centreSliceCT();
-
-    // Find centre in x and y
-    setSlice(centreCT[2]);
-
-    getDimensions(width, height, channels, slices, frames);
-    makeRectangle(0, 0, width, height);
-    ct_x = getProfile();
-
+    translateROImanagerdXdY(delta[0], delta[1]);
+    
+    // Scale the ROIS to NM on CT (most accrate)
     selectWindow("CT");
-    setKeyDown("alt"); ct_y = getProfile();
- 
-    threshold = -1200;
-    centreCT[0] = centreProfile(ct_x, threshold);
-    threshold = -700;
-    centreCT[1] = centreProfile(ct_y, threshold);
+    scaleROImanager(scale[0]);
 
-    Array.print(centreCT);
-
-    // Make ROIS
-    // 	Cylinder inside diameter: 21.6 cm * 130 % = 28.08 cm
-    // 	Cylinder inside height: 18.6 cm * 120 % = 22.32 cm
-    phantomRadius = 216 * 1.3 / 2.0;
-    phantomHeight = 186 * 1.2;
-    selectWindow("CT");
-    createCylinder(centreCT[0], centreCT[1], centreCT[2], phantomRadius, phantomHeight);
-
-    // Save the ROI dataset
-    roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
-    roiManager("Save", roiDirectory + cameraID + "_" + phantomID + "_RoiSet_XYZ.zip");
-
+    // Translate the ROIs from CT to NM in Z
+    
+    ctToNMROImanager("NM", "CT", delta[2]);
 
 } 
 // ***********************************************************************
@@ -65,6 +57,18 @@ function openCTData(cameraID, phantomID){
     if (cameraID == "CZT-WEHR" && phantomID == "Cylinder"){
         CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/WEHR/Cylinder/CT/CTAC5mmCYLINDER_H_1001_CT001.dcm";
         CTslices = 80;
+        run("Image Sequence...", "open=" + CTfile + " number=" + CTslices + " starting=1 increment=1 scale=100 file=[] sort");
+    }
+
+    if (cameraID == "CZT-MEHRS" && phantomID == "Cylinder"){
+        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/MEHRS/Cylinder/CT/CTAC5mmCYLINDER_H_1001_CT001.dcm";
+        CTslices = 80;
+        run("Image Sequence...", "open=" + CTfile + " number=" + CTslices + " starting=1 increment=1 scale=100 file=[] sort");
+    }
+
+    if (cameraID == "Optima" && phantomID == "Cylinder"){
+        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/Optima/Cylinder/CT/CTSPECT-CT_H_1001_CT001.dcm";
+        CTslices = 161;
         run("Image Sequence...", "open=" + CTfile + " number=" + CTslices + " starting=1 increment=1 scale=100 file=[] sort");
     }
 
@@ -166,3 +170,251 @@ function createCircle(x, y, z, R){
 	roiManager("Add");
 	    
 }
+
+
+//------------------------------------------------------------------
+// Calculate the alignment between NM and CT from Infinia Hawkeye 4
+// NMname is the open nuclear medicine image to use
+// CTname is the open CT image to use
+//
+// Return an array with dX, dY and dZ in mm (for use with translateROImanager(dX, dY, dZ))
+function calcNMCTalignment(NMname, CTname){
+
+    // Extract the Dicom fields -> 0020,0032  Image Position (Patient): 
+    selectWindow(NMname);
+    NMdicom = split( getInfo("0020,0032"),"\\");
+    selectWindow(CTname);
+    CTdicom = split( getInfo("0020,0032"),"\\");
+
+    // Calculate the shifts in mm
+    // [0] = x (CT - NM), [1] = y (CT - NM), [2] = z (NM - CT)
+    delta = newArray(3);
+    delta[0] = parseFloat(CTdicom[0]) - parseFloat(NMdicom[0]);
+    delta[1] = parseFloat(CTdicom[1]) - parseFloat(NMdicom[1]);
+    delta[2] = parseFloat(NMdicom[2]) - parseFloat(CTdicom[2]);
+
+    return delta;
+}
+
+//------------------------------------------------------------------
+// Calculate the scale between NM and CT from Infinia Hawkeye 4
+// NMname is the open nuclear medicine image to use
+// CTname is the open CT image to use
+//
+// Return an array with scaleX, scaleY and scaleZ 
+function calcNMCTscale(NMname, CTname){
+
+    // Extract the voxel sizes
+    selectWindow(NMname);
+    getVoxelSize(nm_width, nm_height, nm_depth, nm_unit);
+    selectWindow(CTname);
+    getVoxelSize(ct_width, ct_height, ct_depth, ct_unit);
+    
+    print(nm_width + " " + nm_height+ " " + nm_depth+ " " + nm_unit);
+    print(ct_width + " " + ct_height+ " " + ct_depth+ " " + ct_unit);
+
+
+    // Calculate the scale
+    // [0] = x (CT / NM), [1] = y (CT / NM), [2] = z (NM / CT)
+    delta = newArray(3);
+    delta[0] = ct_width / nm_width;
+    delta[1] = ct_height / nm_height;
+    delta[2] = ct_depth / nm_depth;
+
+    return delta;
+}
+
+//------------------------------------------------------------------
+// Loop through ROI manger and translate all ROIs
+// We can move the ROIs by an amount dZ through the stack
+// All values in mm
+function translateROImanagerdXdY(dX, dY){
+    count = roiManager("count"); 
+    current = roiManager("index"); 
+    print("transdXdY start = " + current);
+    
+    for (i = 0; i < count; i++) { 
+	    roiManager("select", i);
+	
+	    print("[" + i + "] Current Slice = " + getSliceNumber());
+
+	    // Translate in X and Y
+	    translateROIdXdY(dX, dY); 
+	    roiManager("update");
+    }
+
+}
+
+//------------------------------------------------------------------
+// Translate the selected ROI (will remove the old ROI)
+// Position is in mm
+function translateROIdXdY(dX, dY) { 
+
+    // Move the ROI in X and Y
+    //type = selectionType();
+    type = Roi.getType ;
+    getSelectionCoordinates(x, y); 
+    
+    //print("shift = " + dX + " " + dY);
+
+    for (i = 0; i < x.length; i++) { 
+        print ("Old = " + x[i] + " :" + y[i]);
+        x[i] = x[i] + dX; 
+        y[i] = y[i] + dY; 
+        print ("New = " + x[i] + " :" + y[i]);
+    } 
+    makeSelection(type, x, y); 
+
+} 
+//------------------------------------------------------------------
+
+//------------------------------------------------------------------
+// Loop through ROI manger and rescale all ROIs
+function scaleROImanager(factor){
+    count = roiManager("count"); 
+    current = roiManager("index"); 
+    print("scale start = " + current);
+
+    for (i = 0; i < count; i++) { 
+        roiManager("select", i);
+        print("selected " + i);
+        scaleROI(factor); 
+        print("scaled " + i);
+        roiManager("update");
+        print("updated " + i);
+    }
+}
+//------------------------------------------------------------------
+
+
+//------------------------------------------------------------------
+// Scale the currently selected ROI and overwrite
+// Position is in mm
+function scaleROI(factor) { 
+    //type = selectionType();
+    type = Roi.getType ; 
+    getSelectionCoordinates(x, y); 
+    for (i = 0; i < x.length; i++) { 
+        //print ("OLD:" + x[i] + " :" + y[i]);
+        x[i] = x[i] * factor; 
+        y[i] = y[i] * factor;
+        //print ("NEW:" + x[i] + " :" + y[i]);
+    } 
+
+    makeSelection(type, x, y); 
+} 
+//------------------------------------------------------------------
+
+
+//------------------------------------------------------------------
+// Loop through ROI manger and move each ROI to the corresponding NM slice
+// - dZ = shift in CT / NM position in mm
+// - NMname = Nuclear medicine image to use
+// - CTname = CT image to use
+function ctToNMROImanager(NMname, CTname, dZ){
+
+    // Extract the voxel sizes
+    selectWindow(NMname);
+    getVoxelSize(nm_width, nm_height, nm_depth, nm_unit);
+    selectWindow(CTname);
+    getVoxelSize(ct_width, ct_height, ct_depth, ct_unit);
+
+    // Calculate variable we need
+    dZ = dZ / ct_depth; // now in units of CT slices
+
+    count = roiManager("count"); 
+    current = roiManager("index"); 
+    //print("transdZ start = " + current);
+    for (i = 0; i < count; i++) { 
+        roiManager("select", 0); // New ROI goes to bottom so always pick "top" next
+        ctSlice = getSliceNumber();
+        nmSlice = (ctSlice + dZ) * abs(ct_depth / nm_depth);
+        print("[" + i +"] CT Slice: " + ctSlice + " ---> NM Slice: " + nmSlice + " (" + round(nmSlice) + ")" );
+
+        moveROIslice(nmSlice);
+        //print("count in loop = " + count + " i = " + i);
+        // Translate in Z
+        //ctToNMmoveROI(dZ); 
+        //roiManager("update");
+    }
+
+}
+//------------------------------------------------------------------
+
+//------------------------------------------------------------------
+// Move current ROI to new slice
+function moveROIslice(nmSlice){ 
+
+    // Store the ROi we were called with
+    called = roiManager("index"); 
+    //called = 0;    
+
+    // Calculate the new slice
+    roiManager("Remove Slice Info");
+    setSlice(nmSlice);
+
+    //print("Processing roi " + called);
+    //print("Moving " + oldSlice + " to " + oldSlice + shift);
+    //print("Now on slice " + getSliceNumber());
+
+    // Move the ROI to the current slice
+     roiManager("select", called);
+     roiManager("Add");
+
+     // Delete the old ROI we were called with
+     roiManager("select", called);
+     roiManager("Delete");
+} 
+//------------------------------------------------------------------
+
+//------------------------------------------------------------------
+// Loop through ROI manger and translate all ROIs
+// We can move the ROIs by an amount dZ through the stack
+// All values in mm
+function translateROImanagerdZ(dZ){
+    count = roiManager("count"); 
+    current = roiManager("index"); 
+    //print("transdZ start = " + current);
+    for (i = 0; i < count; i++) { 
+        roiManager("select", 0); // New ROI goes to bottom so always pick "top" next
+        //print("count in loop = " + count + " i = " + i);
+        // Translate in Z
+        translateROIdZ(dZ); 
+        //roiManager("update");
+    }
+
+}
+//------------------------------------------------------------------
+
+//------------------------------------------------------------------
+// Translate the selected ROI (will remove and old ROI)
+// Position is in mm
+function translateROIdZ(dZ) { 
+
+    // Calculate number of slices to shift ROIS
+    getVoxelSize(width, height, depth, unit);
+    shift = round(dZ / depth);
+    //print("dZ = " + dZ + " = " + shift + " voxels");
+
+    // Store the ROi we were called with
+    called = roiManager("index"); 
+    //called = 0;    
+
+    // Calculate the new slice
+    roiManager("Remove Slice Info");
+    oldSlice = getSliceNumber();
+    setSlice(oldSlice + shift);
+
+    //print("Processing roi " + called);
+    //print("Moving " + oldSlice + " to " + oldSlice + shift);
+    //print("Now on slice " + getSliceNumber());
+
+    // Move the ROI to the current slice
+     roiManager("select", called);
+     roiManager("Add");
+
+     // Delete the old ROI we were called with
+     roiManager("select", called);
+     roiManager("Delete");
+} 
+//------------------------------------------------------------------

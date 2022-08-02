@@ -1,10 +1,10 @@
-/* Define a cylindrical ROI based on the centre of the phantom
-
- */
+/* 
+Define a cylindrical ROI based on the centre of the phantom using CT
+*/
 macro "cylinderROI" {
 
     // Open the CT image
-    cameraID = "CZT-WEHR";
+    cameraID = "DR";
     phantomID = "Cylinder";
     openCTData(cameraID, phantomID); 
 
@@ -22,7 +22,8 @@ macro "cylinderROI" {
 
     selectWindow("CT");
     setKeyDown("alt"); ct_y = getProfile();
- 
+    
+
     threshold = -1200;
     centreCT[0] = centreProfile(ct_x, threshold);
     threshold = -700;
@@ -35,7 +36,13 @@ macro "cylinderROI" {
     // 	Cylinder inside height: 18.6 cm * 120 % = 22.32 cm
     phantomRadius = 216 * 1.3 / 2.0;
     phantomHeight = 186 * 1.2;
+    //phantomRadius = 216  / 2.0;
+    //phantomHeight = 186;
+
     selectWindow("CT");
+    run("Select None");
+    roiManager("reset");
+
     createCylinder(centreCT[0], centreCT[1], centreCT[2], phantomRadius, phantomHeight);
 
     // Save the ROI dataset
