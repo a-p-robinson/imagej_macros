@@ -1,7 +1,7 @@
 /* 
-Define a cylindrical ROI based on the centre of the phantom using CT
+Show the sphere ROIS
 */
-macro "cylinderROI" {
+macro "showSphere" {
 
     // Get the data names from arguments
     args = split(getArgument(), " ");
@@ -16,51 +16,13 @@ macro "cylinderROI" {
     phantomID = args[1];
 
     // Open the CT image
-    // cameraID = "DR";
-    // phantomID = "Cylinder";
     openCTData(cameraID, phantomID); 
 
-    // Find the centre in Z
-    selectWindow("CT");
-    centreCT = newArray(3);
-    centreCT[2] = centreSliceCT();
+    // Open the NM image
+    openNMData(cameraID, phantomID);
 
-    // Find centre in x and y
-    setSlice(centreCT[2]);
-
-    getDimensions(width, height, channels, slices, frames);
-    makeRectangle(0, 0, width, height);
-    ct_x = getProfile();
-
-    selectWindow("CT");
-    setKeyDown("alt"); ct_y = getProfile();
-    
-
-    threshold = -1200;
-    centreCT[0] = centreProfile(ct_x, threshold);
-    threshold = -700;
-    centreCT[1] = centreProfile(ct_y, threshold);
-
-    Array.print(centreCT);
-
-    // Make ROIS
-    // 	Cylinder inside diameter: 21.6 cm * 130 % = 28.08 cm
-    // 	Cylinder inside height: 18.6 cm * 120 % = 22.32 cm
-    phantomRadius = 216 * 1.3 / 2.0;
-    phantomHeight = 186 * 1.2;
-    //phantomRadius = 216  / 2.0;
-    //phantomHeight = 186;
-
-    selectWindow("CT");
-    run("Select None");
-    roiManager("reset");
-
-    createCylinder(centreCT[0], centreCT[1], centreCT[2], phantomRadius, phantomHeight);
-
-    // Save the ROI dataset
-    roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
-    roiManager("Save", roiDirectory + cameraID + "_" + phantomID + "_RoiSet_XYZ.zip");
-
+    // Open the ROIs
+    openNMROIspheres(cameraID, phantomID);
 
 } 
 // ***********************************************************************
@@ -93,17 +55,84 @@ function openCTData(cameraID, phantomID){
     if (cameraID == "Optima" && phantomID == "Cylinder"){
         CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/Optima/Cylinder/CT/CTSPECT-CT_H_1001_CT001.dcm";
         CTslices = 161;
-
     }
+
+    if (cameraID == "DR" && phantomID == "Sphere1"){
+        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/DR/Sphere1/CT/CTSoftTissue1.25mmSPECTCT_H_1001_CT001.dcm";
+        CTslices = 321;
+    }
+
 
     run("Image Sequence...", "open=" + CTfile + " number=" + CTslices + " starting=1 increment=1 scale=100 file=[] sort");
     rename("CT");
+}
+
+// Open the CT ROI (spheres)
+function openCTROIspheres(cameraID, phantomID){
+
+    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_CT_Sphere_1_RoiSet_XYZ.zip";
+    roiManager("Open",roiFile);
+
+    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_CT_Sphere_2_RoiSet_XYZ.zip";
+    roiManager("Open",roiFile);
+
+    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_CT_Sphere_3_RoiSet_XYZ.zip";
+    roiManager("Open",roiFile);
+
+    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_CT_Sphere_4_RoiSet_XYZ.zip";
+    roiManager("Open",roiFile);
+
+    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_CT_Sphere_5_RoiSet_XYZ.zip";
+    roiManager("Open",roiFile);
+
+    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_CT_Sphere_6_RoiSet_XYZ.zip";
+    roiManager("Open",roiFile);
+
+}
+
+// Open the CT ROI (spheres)
+function openNMROIspheres(cameraID, phantomID){
+
+    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_NM_Sphere_1_RoiSet_XYZ.zip";
+    roiManager("Open",roiFile);
+
+    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_NM_Sphere_2_RoiSet_XYZ.zip";
+    roiManager("Open",roiFile);
+
+    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_NM_Sphere_3_RoiSet_XYZ.zip";
+    roiManager("Open",roiFile);
+
+    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_NM_Sphere_4_RoiSet_XYZ.zip";
+    roiManager("Open",roiFile);
+
+    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_NM_Sphere_5_RoiSet_XYZ.zip";
+    roiManager("Open",roiFile);
+
+    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_NM_Sphere_6_RoiSet_XYZ.zip";
+    roiManager("Open",roiFile);
+
 }
 
 // Open the CT ROI
 function openCTROI(cameraID, phantomID){
 
     roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_RoiSet_XYZ.zip";
+    roiManager("Open",roiFile);
+
+}
+
+// Open the NM ROI
+function openNMROI(cameraID, phantomID){
+
+    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_NM_RoiSet_XYZ.zip";
+    roiManager("Open",roiFile);
+
+}
+
+// Open the Sphere Centres
+function openCTsphereCentres(cameraID, phantomID){
+
+    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_CT_Centres_RoiSet.zip";
     roiManager("Open",roiFile);
 
 }
@@ -126,6 +155,11 @@ function openNMData(cameraID, phantomID){
     if (cameraID == "Optima" && phantomID == "Cylinder"){
         NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/Optima/Cylinder/Recon/SPECT-CT_EM2_IRAC001_DS.dcm";      
     }
+
+    if (cameraID == "DR" && phantomID == "Sphere1"){
+        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/DR/Sphere1/Recon/SPECTCT_EM2_IRAC001_DS.dcm";
+    }
+
 
     open(NMfile);
     rename("NM");
@@ -482,4 +516,187 @@ function moveROIslice(nmSlice){
      roiManager("select", called);
      roiManager("Delete");
 } 
+//------------------------------------------------------------------
+
+
+//------------------------------------------------------------------
+// Get total counts in ROI manager
+function countsROImanager(){
+    DEBUG = 0;
+
+    count = roiManager("count"); 
+    current = roiManager("index"); 
+
+    // Variable for output
+    results = 0;
+
+    // Set the measurements we want to make
+    run("Set Measurements...", "integrated stack display redirect=None decimal=5");
+
+    for (i = 0; i < count; i++) { 
+	    roiManager("select", i); 
+	
+    
+        if (DEBUG > 0){
+            run("Measure");                                                                                                              
+            results += getResult("RawIntDen");                                                                                      
+        }
+        else{
+            List.setMeasurements;
+            results = results + List.getValue("RawIntDen");
+            List.clear();
+        }	
+
+	    roiManager("update");
+    }
+
+    return results;
+}
+//------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+// Measure total counts in stack
+// - Return the total counts in image
+function sumStack(){
+    run("Z Project...", "projection=[Sum Slices]");
+    rename("_sum");
+
+    // Set the measurements we want to make 
+    run("Set Measurements...", "area min bounding shape integrated stack display redirect=None decimal=5");
+
+    // Measure
+    List.setMeasurements;
+    results = List.getValue("RawIntDen");
+    List.clear();
+
+    close("_sum");
+
+    return results;
+    
+}
+//---------------------------------------------------------------------------
+
+
+//------------------------------------------------------------------
+// Loop through ROI manger and return the volume and surface area defined by ROI
+// For surface area no interpolation is applied
+function getVolumeArea(){
+    count = roiManager("count"); 
+    current = roiManager("index"); 
+
+    // Get the scale of image
+    getVoxelSize(width, height, depth, unit);
+    width = abs(width);
+    height = abs(height);
+    depth = abs(depth);
+    
+    // Array for output [0] = area [1] = perimeter
+    results = newArray(2);
+
+    // How much area did the last ROI enclose?
+    lastArea = 0.0;
+
+    // Set the measurements we want to make
+    run("Set Measurements...", "area perimeter stack display redirect=None decimal=10");
+
+    for (i = 0; i < count; i++) { 
+        roiManager("select", i); 
+        
+        // Run the measurements
+        List.setMeasurements;
+
+        // Sum volumes for each slice
+        results[0] += List.getValue("Area") * depth;
+        
+        // Sum the "strips" of surface area defined by perimeter
+        results[1] += List.getValue("Perim.") * depth;
+        
+        // For the first slice add the surface area of the outside face
+        if (i == 0){
+            results[1] += List.getValue("Area");
+            lastArea = List.getValue("Area");
+        }
+        // For all other slices add the difference between areas (the overlap in Z)
+        else{
+            results[1] += abs(List.getValue("Area") - lastArea);
+            lastArea = List.getValue("Area");
+            
+            // If we are on the last slice then add the area of the other end face
+            if (i == count - 1){
+                results[1] += List.getValue("Area");
+            }
+        }
+        
+        List.clear();
+        roiManager("update");
+    }
+
+    return results;
+}
+//------------------------------------------------------------------
+
+//------------------------------------------------------------------
+// Generate a spherical ROI data on the open image centered on (x,y,z)
+//  - x,y,z are given in terms of slice or voxel
+//  - R is the radius of the sphere in mm
+function createSphere(x, y, z, R){
+
+    // Get image stats
+    getVoxelSize(width, height, depth, unit);
+    width = abs(width);
+    height = abs(height);
+    depth = abs(depth);
+        
+    // Calculate how many slices we need in each direction
+    numberSlices = round(R / depth);
+    numberSlices = numberSlices + 2; // Make sure we go past the end with the calculation (but not the slices)
+
+    for(i = 0; i <= numberSlices; i++) {
+        
+        // Get the radius for this slice
+        // Move the position of the first slice up by the rounding error
+        //roundError = round(R / depth) - (R /depth);
+        roundError = 0;
+        r = getSegmentRadius(R, i*depth + roundError);
+        r = r /width;
+        
+        // Make sure the radius is valid for this slice
+        if(r > 0){
+            
+            // If first slice just one ROI
+            if (i == 0){
+                setSlice(z);
+                makeOval(x-r, y-r, 2*r, 2*r);
+                roiManager("Add");
+            }
+            else{
+                setSlice(z+i);
+                makeOval(x-r, y-r, 2*r, 2*r);
+                roiManager("Add");
+                setSlice(z-i);
+                makeOval(x-r, y-r, 2*r, 2*r);
+                roiManager("Add");
+            }
+        }
+}
+
+roiManager("Sort");
+    
+}
+//------------------------------------------------------------------
+
+//------------------------------------------------------------------
+// Given a radius and a height from the centre return segment radius
+function getSegmentRadius(r,h){
+
+    if ((r*r - h*h) < 1){
+	    a = -99;
+    }
+    else{
+        a = sqrt(r*r - h*h);
+    }
+    
+    return a;
+    
+}
 //------------------------------------------------------------------

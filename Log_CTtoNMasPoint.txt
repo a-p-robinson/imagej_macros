@@ -1,0 +1,49 @@
+29.3468, 25.8468, 301.7968
+Will generate sphere [CT]:
+0 : 199.8125 262.875 178
+CT VOI volume : 559.091 mm^3
+CT VOI surface area : 426.6145 mm^2
+Will generate sphere [NM]:
+0 : 206.455 268.7253 110
+NM VOI volume : 1466.033 mm^3
+NM VOI surface area : 780.5974 mm^2
+Will generate sphere [CT]:
+1 : 213.625 205.375 178
+CT VOI volume : 1112.2215 mm^3
+CT VOI surface area : 648.6364 mm^2
+Will generate sphere [NM]:
+1 : 220.2675 211.2253 110
+NM VOI volume : 1466.033 mm^3
+NM VOI surface area : 780.5974 mm^2
+Will generate sphere [CT]:
+2 : 269.4167 190.3333 178
+CT VOI volume : 2024.1717 mm^3
+CT VOI surface area : 1002.6502 mm^2
+Will generate sphere [NM]:
+2 : 276.0591 196.1836 110
+NM VOI volume : 2587.1171 mm^3
+NM VOI surface area : 1081.6776 mm^2
+Will generate sphere [CT]:
+3 : 312 230.25 178
+CT VOI volume : 4369.016 mm^3
+CT VOI surface area : 1651.2461 mm^2
+Will generate sphere [NM]:
+3 : 318.6425 236.1003 110
+NM VOI volume : 6985.2161 mm^3
+NM VOI surface area : 2107.5611 mm^2
+Will generate sphere [CT]:
+4 : 299.25 287.3333 178
+CT VOI volume : 8416.1672 mm^3
+CT VOI surface area : 2571.6171 mm^2
+Will generate sphere [NM]:
+4 : 305.8925 293.1836 110
+NM VOI volume : 10348.4683 mm^3
+NM VOI surface area : 2843.5924 mm^2
+Will generate sphere [CT]:
+5 : 242 303.75 178
+CT VOI volume : 16897.8995 mm^3
+CT VOI surface area : 4123.4381 mm^2
+Will generate sphere [NM]:
+5 : 248.6425 309.6003 110
+NM VOI volume : 18454.7685 mm^3
+NM VOI surface area : 4605.5073 mm^2
