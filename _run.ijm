@@ -1,28 +1,44 @@
 /* 
-Show the sphere ROIS
+Transfer a CT based ROI to a nuclear medicine image
 */
-macro "showSphere" {
+macro "makeNucMedROI" {
 
     // Get the data names from arguments
-    args = split(getArgument(), " ");
-
-    if (args.length != 2){
-        print("ERROr: must specify 2 arguments (camera phantom");
-        Array.print(args);
-        exit();
-    }
-
+    args = parseArguments();    
     cameraID = args[0];
     phantomID = args[1];
+    roiID = args[2];
 
     // Open the CT image
     openCTData(cameraID, phantomID); 
 
-    // Open the NM image
+    // Open the ROIs
+    openROI(cameraID, phantomID, roiID);
+    
+    // Open the Nuc Med reconstructed image
     openNMData(cameraID, phantomID);
 
-    // Open the ROIs
-    openNMROIspheres(cameraID, phantomID);
+
+    // Calculate the alignment of CT and NM in mm
+    delta = calcNMCTalignment("NM", "CT");
+    scale = calcNMCTscale("NM", "CT");
+    Array.print(delta);
+    Array.print(scale);
+
+    // Translate the ROIs from CT to NM in X and Y
+    selectWindow("CT");
+    translateROImanagerdXdY(delta[0], delta[1]);
+    
+    // Scale the ROIS to NM on CT (most accrate)
+    selectWindow("CT");
+    scaleROImanager(scale[0]);
+
+    // Translate the ROIs from CT to NM in Z
+    ctToNMROImanager("NM", "CT", delta[2]);
+
+    // Save the ROI dataset
+    roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
+    roiManager("Save", roiDirectory + cameraID + "_" + phantomID + roiID + "_NM_RoiSet_XYZ.zip");
 
 } 
 // ***********************************************************************
@@ -33,6 +49,43 @@ macro "showSphere" {
 // 
 // * Revised APR: 01/08/22
 // ***********************************************************************
+
+// Parse the passed arguments and get the dataset to open
+function parseArguments(){
+
+    // Get the data names from arguments
+    args = split(getArgument(), " ");
+    cameraID = args[0];
+    phantomID = args[1];
+
+    if (args.length < 2){
+        print("ERROR: must specify at least 2 arguments (camera phantom");
+        Array.print(args);
+        exit();
+    }
+
+
+    if (phantomID == "Sphere1"){
+        if (args.length != 3){
+            print("ERROR: must specify 3 arguments (camera phantom sphereID");
+            Array.print(args);
+            exit();
+        }
+    
+        roiID = args[2];
+    }
+    else{
+        roiID = "_CT";
+    }
+
+    // Construct array to return
+    res = newArray(3);
+    res[0] = cameraID;
+    res[1] = phantomID;
+    res[2] = roiID;
+
+    return res;
+}
 
 // Open the correct CT image for the specified dataset
 function openCTData(cameraID, phantomID){
@@ -62,69 +115,30 @@ function openCTData(cameraID, phantomID){
         CTslices = 321;
     }
 
+    if (cameraID == "Optima" && phantomID == "Sphere1"){
+        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/Optima/Sphere1/CT/CTSPECT-CT_H_1001_CT001.dcm";
+        CTslices = 161;
+    }
+
+    if (cameraID == "CZT-WEHR" && phantomID == "Sphere1"){
+        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/WEHR/Sphere1/CT/CTAC5mmSPHERES1_H_1001_CT001.dcm";
+        CTslices = 80;
+    }
+
+    if (cameraID == "CZT-MEHRS" && phantomID == "Sphere1"){
+        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/MEHRS/Sphere1/CT/CTAC5mmSPHERES1_H_1001_CT001.dcm";
+        CTslices = 80;
+    }
+
 
     run("Image Sequence...", "open=" + CTfile + " number=" + CTslices + " starting=1 increment=1 scale=100 file=[] sort");
     rename("CT");
 }
 
-// Open the CT ROI (spheres)
-function openCTROIspheres(cameraID, phantomID){
+// Open the ROI set
+function openROI(cameraID, phantomID, roiID){
 
-    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_CT_Sphere_1_RoiSet_XYZ.zip";
-    roiManager("Open",roiFile);
-
-    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_CT_Sphere_2_RoiSet_XYZ.zip";
-    roiManager("Open",roiFile);
-
-    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_CT_Sphere_3_RoiSet_XYZ.zip";
-    roiManager("Open",roiFile);
-
-    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_CT_Sphere_4_RoiSet_XYZ.zip";
-    roiManager("Open",roiFile);
-
-    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_CT_Sphere_5_RoiSet_XYZ.zip";
-    roiManager("Open",roiFile);
-
-    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_CT_Sphere_6_RoiSet_XYZ.zip";
-    roiManager("Open",roiFile);
-
-}
-
-// Open the CT ROI (spheres)
-function openNMROIspheres(cameraID, phantomID){
-
-    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_NM_Sphere_1_RoiSet_XYZ.zip";
-    roiManager("Open",roiFile);
-
-    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_NM_Sphere_2_RoiSet_XYZ.zip";
-    roiManager("Open",roiFile);
-
-    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_NM_Sphere_3_RoiSet_XYZ.zip";
-    roiManager("Open",roiFile);
-
-    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_NM_Sphere_4_RoiSet_XYZ.zip";
-    roiManager("Open",roiFile);
-
-    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_NM_Sphere_5_RoiSet_XYZ.zip";
-    roiManager("Open",roiFile);
-
-    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_NM_Sphere_6_RoiSet_XYZ.zip";
-    roiManager("Open",roiFile);
-
-}
-
-// Open the CT ROI
-function openCTROI(cameraID, phantomID){
-
-    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_RoiSet_XYZ.zip";
-    roiManager("Open",roiFile);
-
-}
-
-// Open the NM ROI
-function openNMROI(cameraID, phantomID){
-
-    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_NM_RoiSet_XYZ.zip";
+    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + roiID + "_RoiSet_XYZ.zip";
     roiManager("Open",roiFile);
 
 }
@@ -132,7 +146,7 @@ function openNMROI(cameraID, phantomID){
 // Open the Sphere Centres
 function openCTsphereCentres(cameraID, phantomID){
 
-    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + "_CT_Centres_RoiSet.zip";
+    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/centres/"+cameraID+ "_" + phantomID + "_CT_Centres_RoiSet.zip";
     roiManager("Open",roiFile);
 
 }
@@ -160,6 +174,17 @@ function openNMData(cameraID, phantomID){
         NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/DR/Sphere1/Recon/SPECTCT_EM2_IRAC001_DS.dcm";
     }
 
+    if (cameraID == "CZT-WEHR" && phantomID == "Sphere1"){
+        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/WEHR/Sphere1/Recon/SPHERES1_EM2_IRAC001_DS.dcm";
+    }
+
+    if (cameraID == "CZT-MEHRS" && phantomID == "Sphere1"){
+        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/MEHRS/Sphere1/Recon/SPHERES1MEHRS_EM2_IRAC001_DS.dcm";
+    }
+
+    if (cameraID == "Optima" && phantomID == "Sphere1"){
+        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/Optima/Sphere1/Recon/SPECT-CT_EM2_IRAC001_DS.dcm";      
+    }
 
     open(NMfile);
     rename("NM");

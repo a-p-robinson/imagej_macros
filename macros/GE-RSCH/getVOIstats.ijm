@@ -1,29 +1,22 @@
 /* 
 Get the statistics from the VOI (all ROIs)
 */
-macro "getROIstats" {
+macro "getVOIstats" {
 
     // Get the data names from arguments
-    args = split(getArgument(), " ");
-
-    if (args.length != 2){
-        print("ERROr: must specify 2 arguments (camera phantom");
-        Array.print(args);
-        exit();
-    }
-
+    args = parseArguments();    
     cameraID = args[0];
     phantomID = args[1];
+    roiID = args[2];
 
     // Open the CT image
     openCTData(cameraID, phantomID); 
 
     // Open the ROIs
-    openNMROI(cameraID, phantomID);
+    openROI(cameraID, phantomID, "_CT_NM");
     
     // Open the Nuc Med reconstructed image
     openNMData(cameraID, phantomID);
-
 
     // Get the VOI stats
     //

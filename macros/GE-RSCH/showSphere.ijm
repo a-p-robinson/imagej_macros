@@ -22,6 +22,6 @@ macro "showSphere" {
     openNMData(cameraID, phantomID);
 
     // Open the ROIs
-    openNMROIspheres(cameraID, phantomID);
+    openROI(cameraID, phantomID, "_CT_Sphere_6_NM");
 
 }

@@ -4,16 +4,10 @@ Define a cylindrical ROI based on the centre of the phantom using CT
 macro "cylinderROI" {
 
     // Get the data names from arguments
-    args = split(getArgument(), " ");
-
-    if (args.length != 2){
-        print("ERROr: must specify 2 arguments (camera phantom");
-        Array.print(args);
-        exit();
-    }
-
+    args = parseArguments();    
     cameraID = args[0];
     phantomID = args[1];
+    roiID = args[2];
 
     // Open the CT image
     // cameraID = "DR";
@@ -59,7 +53,7 @@ macro "cylinderROI" {
 
     // Save the ROI dataset
     roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
-    roiManager("Save", roiDirectory + cameraID + "_" + phantomID + "_RoiSet_XYZ.zip");
+    roiManager("Save", roiDirectory + cameraID + "_" + phantomID + roiID + "_RoiSet_XYZ.zip");
 
 
 }

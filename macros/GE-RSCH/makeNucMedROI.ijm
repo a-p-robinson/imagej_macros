@@ -4,25 +4,16 @@ Transfer a CT based ROI to a nuclear medicine image
 macro "makeNucMedROI" {
 
     // Get the data names from arguments
-    args = split(getArgument(), " ");
-
-    if (args.length != 2){
-        print("ERROr: must specify 2 arguments (camera phantom");
-        Array.print(args);
-        exit();
-    }
-
+    args = parseArguments();    
     cameraID = args[0];
     phantomID = args[1];
-
-    // cameraID = "DR";
-    // phantomID = "Cylinder";
+    roiID = args[2];
 
     // Open the CT image
     openCTData(cameraID, phantomID); 
 
     // Open the ROIs
-    openCTROI(cameraID, phantomID);
+    openROI(cameraID, phantomID, roiID);
     
     // Open the Nuc Med reconstructed image
     openNMData(cameraID, phantomID);
@@ -47,6 +38,6 @@ macro "makeNucMedROI" {
 
     // Save the ROI dataset
     roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
-    roiManager("Save", roiDirectory + cameraID + "_" + phantomID + "_NM_RoiSet_XYZ.zip");
+    roiManager("Save", roiDirectory + cameraID + "_" + phantomID + roiID + "_NM_RoiSet_XYZ.zip");
 
 }
