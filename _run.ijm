@@ -469,55 +469,60 @@ function ctToNMROImanager(NMname, CTname, dZ){
 
     }
 
-    // Now merge the ROIS on the same slice
+    // Now merge the ROIS on the same slice (only need to do this if we have multiple ROIs)
     currentSlice = -99;
-    //print("will process " + count + " rois");
-    for (i = 0; i < count; i++) { 
-        //print("i="+i);
-        roiManager("select", i);
-        thisSlice = getSliceNumber();
-
-        if (i == 0){
-            currentSlice = thisSlice;
-            mergeArray = newArray(1);
-            mergeArray[0] = 0;
-        }
-        else{            
-            if (thisSlice == currentSlice){
-                // Add to the array of slices to merge
-                mergeArray = Array.concat(mergeArray, i);
-            }
-            if ((thisSlice > currentSlice) || (i == count-1)){
-                // Merge the array and set current slice
-                //print(thisSlice + " > " + currentSlice);
-                //print("Will merge ROIs:");
-                //Array.print(mergeArray);
-
+    if (count > 1){
+    
+        //print("will process " + count + " rois");
+        for (i = 0; i < count; i++) { 
+            //print("i="+i);
+            roiManager("select", i);
+            thisSlice = getSliceNumber();
+        
+            if (i == 0){
                 currentSlice = thisSlice;
-
-                // Do the merge
-                if(mergeArray.length > 1){
-                    roiManager("select", mergeArray);
-                    roiManager("Or");
-                    roiManager("Add");
-                }
-                else{
-                    // We may have a single ROI ona  slice in which we don't need to merge
-                    roiManager("select", mergeArray);
-                    roiManager("Add");
-                }
-                // Reset array
                 mergeArray = newArray(1);
-                mergeArray[0] = i;
+                mergeArray[0] = 0;
             }
+            else{            
+                if (thisSlice == currentSlice){
+                    // Add to the array of slices to merge
+                    mergeArray = Array.concat(mergeArray, i);
+                }
+                if ((thisSlice > currentSlice) || (i == count-1)){
+                    // Merge the array and set current slice
+                    //print(thisSlice + " > " + currentSlice);
+                    //print("Will merge ROIs:");
+                    //Array.print(mergeArray);
+                
+                    currentSlice = thisSlice;
+                
+                    // Do the merge
+                    if(mergeArray.length > 1){
+                        roiManager("select", mergeArray);
+                        roiManager("Or");
+                        roiManager("Add");
+                    }
+                    else{
+                        // We may have a single ROI ona  slice in which we don't need to merge
+                        roiManager("select", mergeArray);
+                        roiManager("Add");
+                    }
+                    // Reset array
+                    mergeArray = newArray(1);
+                    mergeArray[0] = i;
+                }
+            }
+        }
+
+        // Delete the original ROIS (can I do this in one loop?)
+        for (i = 0; i < count; i++) { 
+            roiManager("select", 0);
+            roiManager("delete");   
         }
     }
 
-    // Delete the original ROIS (can I do this in one loop?)
-    for (i = 0; i < count; i++) { 
-        roiManager("select", 0);
-        roiManager("delete");
-    }
+    
 }
 //------------------------------------------------------------------
 
