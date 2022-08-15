@@ -87,6 +87,25 @@ function openCTData(cameraID, phantomID){
         CTslices = 80;
     }
 
+    if (cameraID == "DR" && phantomID == "Sphere2"){
+        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/DR/Sphere2/CT/CTSoftTissue1.25mmSPECTCT_H_1001_CT001.dcm";
+        CTslices = 321;
+    }
+
+    if (cameraID == "Optima" && phantomID == "Sphere2"){
+        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/Optima/Sphere2/CT/CTSPECT-CT_H_1001_CT001.dcm";
+        CTslices = 161;
+    }
+
+    if (cameraID == "CZT-WEHR" && phantomID == "Sphere2"){
+        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/WEHR/Sphere2/CT/CTAC5mmSPHERES2_H_1001_CT001.dcm";
+        CTslices = 80;
+    }
+
+    if (cameraID == "CZT-MEHRS" && phantomID == "Sphere2"){
+        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/MEHRS/Sphere2/CT/CTAC5mmSPHERES1_H_1001_CT001.dcm";
+        CTslices = 80;
+    }
 
     run("Image Sequence...", "open=" + CTfile + " number=" + CTslices + " starting=1 increment=1 scale=100 file=[] sort");
     rename("CT");
@@ -141,6 +160,22 @@ function openNMData(cameraID, phantomID){
 
     if (cameraID == "Optima" && phantomID == "Sphere1"){
         NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/Optima/Sphere1/Recon/SPECT-CT_EM2_IRAC001_DS.dcm";      
+    }
+
+    if (cameraID == "DR" && phantomID == "Sphere2"){
+        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/DR/Sphere2/Recon/SPHERES2_EM2_IRAC001_DS.dcm";
+    }
+
+    if (cameraID == "Optima" && phantomID == "Sphere2"){
+        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/Optima/Sphere2/Recon/SPECT-CT_EM2_IRAC001_DS.dcm";      
+    }
+
+    if (cameraID == "CZT-WEHR" && phantomID == "Sphere2"){
+        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/WEHR/Sphere2/Recon/SPHERES2_EM2_IRAC001_DS.dcm";
+    }
+
+    if (cameraID == "CZT-MEHRS" && phantomID == "Sphere2"){
+        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/MEHRS/Sphere2/Recon/SPHERES2MEHRS_EM2_IRAC001_DS.dcm";
     }
 
     open(NMfile);
@@ -296,7 +331,7 @@ function calcNMCTscale(NMname, CTname){
 
 
     // Calculate the scale
-    // [0] = x (CT / NM), [1] = y (CT / NM), [2] = z (NM / CT)
+    // [0] = x (CT / NM), [1] = y (CT / NM), [2] =**Need to fix problem with CZT smallest sphere being only 1 slice thick (does not save ROI set)** z (NM / CT)
     delta = newArray(3);
     delta[0] = ct_width / nm_width;
     delta[1] = ct_height / nm_height;
@@ -646,7 +681,7 @@ function createSphere(x, y, z, R){
         roundError = 0;
         r = getSegmentRadius(R, i*depth + roundError);
         r = r /width;
-        
+
         // Make sure the radius is valid for this slice
         if(r > 0){
             
