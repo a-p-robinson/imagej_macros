@@ -47,4 +47,4 @@
 # source rIJm.sh macros/GE-RSCH/makeNucMedROI.ijm DR Sphere2
 # source rIJm.sh macros/GE-RSCH/makeNucMedROI.ijm Optima Sphere2
 # source rIJm.sh macros/GE-RSCH/makeNucMedROI.ijm CZT-WEHR Sphere2
- source rIJm.sh macros/GE-RSCH/makeNucMedROI.ijm CZT-MEHRS Sphere2
+# source rIJm.sh macros/GE-RSCH/makeNucMedROI.ijm CZT-MEHRS Sphere2

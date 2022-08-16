@@ -20,20 +20,23 @@ function parseArguments(){
         Array.print(args);
         exit();
     }
-
-
+    
     if (phantomID == "Sphere1"){
         if (args.length != 3){
             print("ERROR: must specify 3 arguments (camera phantom sphereID");
             Array.print(args);
             exit();
         }
-    
+    }
+
+    if (args.length == 3){
         roiID = args[2];
     }
     else{
+        // Default to the CT roi
         roiID = "_CT";
     }
+    
 
     // Construct array to return
     res = newArray(3);
