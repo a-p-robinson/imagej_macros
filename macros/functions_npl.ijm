@@ -563,12 +563,16 @@ function countsROImanager(){
 	
     
         if (DEBUG > 0){
-            run("Measure");                                                                                                              
-            results += getResult("RawIntDen");                                                                                      
+            run("Measure");                                                                    
+            if (getResult("RawIntDen") != NaN){
+                results += getResult("RawIntDen");               
+            }
         }
         else{
             List.setMeasurements;
-            results = results + List.getValue("RawIntDen");
+            if (List.getValue("RawIntDen") != NaN){
+                results = results + List.getValue("RawIntDen");
+            }
             List.clear();
         }	
 

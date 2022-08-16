@@ -2,6 +2,7 @@
 *.*~
 *~
 .#*
+.~*
 
 # C/C++ objects
 *.o
@@ -30,5 +31,7 @@
 *.pickle
 
 *.csv
+
+*.xlsx
 
 *.log
