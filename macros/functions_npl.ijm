@@ -1,5 +1,5 @@
 // ***********************************************************************
-// * Common libary of ImageJ macro functions
+// * Common library of ImageJ macro functions
 // * 
 // * Functions can be appended to the end of macro file before running
 // * using runM.sh
@@ -296,22 +296,26 @@ function createCircle(x, y, z, R){
 // NMname is the open nuclear medicine image to use
 // CTname is the open CT image to use
 //
-// Return an array with dX, dY and dZ in mm (for use with translateROImanager(dX, dY, dZ))
-function calcNMCTalignment(NMname, CTname){
+// Return an array with dX, dY in voxels
+function calcNMCTalignmentXY(NMname, CTname){
 
     // Extract the Dicom fields -> 0020,0032  Image Position (Patient): 
     selectWindow(NMname);
     NMdicom = split( getInfo("0020,0032"),"\\");
+    getVoxelSize(nm_width, nm_height, nm_depth, nm_unit);
     selectWindow(CTname);
     CTdicom = split( getInfo("0020,0032"),"\\");
+    getVoxelSize(ct_width, ct_height, ct_depth, ct_unit);
 
     // Calculate the shifts in mm
-    // [0] = x (CT - NM), [1] = y (CT - NM), [2] = z (NM - CT)
-    delta = newArray(3);
-    delta[0] = parseFloat(CTdicom[0]) - parseFloat(NMdicom[0]);
-    delta[1] = parseFloat(CTdicom[1]) - parseFloat(NMdicom[1]);
-    delta[2] = parseFloat(NMdicom[2]) - parseFloat(CTdicom[2]);
+    // - The centre of the first voxels are in differnet place so we need to shift the CT ROIS over by this amount before scaling
+    // - The DICOM headers have the positions in mm but we also need to account for imagej using the top of the voxel as zero and shift by an extra half voxel for each modaility in the SAME direction so +  one a - the other
+    // - Finally we convert mm to CT voxels for shifting the CT ROIS
 
+    delta = newArray(2);
+    delta[0] = (parseFloat(CTdicom[0]) - parseFloat(NMdicom[0] )+ nm_width/2 - ct_width/2) / ct_width;
+    delta[1] = (parseFloat(CTdicom[1]) - parseFloat(NMdicom[1]) + nm_height/2 -ct_height /2) / ct_height;
+    
     return delta;
 }
 
@@ -329,8 +333,8 @@ function calcNMCTscale(NMname, CTname){
     selectWindow(CTname);
     getVoxelSize(ct_width, ct_height, ct_depth, ct_unit);
     
-    print(nm_width + " " + nm_height+ " " + nm_depth+ " " + nm_unit);
-    print(ct_width + " " + ct_height+ " " + ct_depth+ " " + ct_unit);
+    //print(nm_width + " " + nm_height+ " " + nm_depth+ " " + nm_unit);
+    //print(ct_width + " " + ct_height+ " " + ct_depth+ " " + ct_unit);
 
 
     // Calculate the scale
@@ -377,10 +381,10 @@ function translateROIdXdY(dX, dY) {
     //print("shift = " + dX + " " + dY);
 
     for (i = 0; i < x.length; i++) { 
-       //print ("Old = " + x[i] + " :" + y[i]);
+        // print ("Old = " + x[i] + " :" + y[i]);
         x[i] = x[i] + dX; 
         y[i] = y[i] + dY; 
-        //print ("New = " + x[i] + " :" + y[i]);
+        // print ("New = " + x[i] + " :" + y[i]);
     } 
     makeSelection(type, x, y); 
 
@@ -427,37 +431,47 @@ function scaleROI(factor) {
 
 //------------------------------------------------------------------
 // Loop through ROI manger and move each ROI to the corresponding NM slice
-// - dZ = shift in CT / NM position in mm
 // - NMname = Nuclear medicine image to use
 // - CTname = CT image to use
-function ctToNMROImanager(NMname, CTname, dZ){
+function ctToNMROImanagerZ(NMname, CTname){
 
     // Extract the voxel sizes
     selectWindow(NMname);
     getVoxelSize(nm_width, nm_height, nm_depth, nm_unit);
     nmSlicesMax = nSlices;
-    print(nmSlicesMax);
+
     selectWindow(CTname);
     getVoxelSize(ct_width, ct_height, ct_depth, ct_unit);
 
-    // Calculate variable we need
-    dZ = dZ / ct_depth; // now in units of CT slices
+    // Get the starting position for NM slices
+    selectWindow("NM");
+    setSlice(1);
+    NMdicom = split( getInfo("0020,0032"),"\\");
+    nmStart = parseFloat(NMdicom[2]);
 
+
+    // Loop through all the rois
     count = roiManager("count"); 
     current = roiManager("index"); 
 
     for (i = 0; i < count; i++) { 
         selectWindow("CT");
         roiManager("select", 0); // New ROI goes to bottom so always pick "top" next
-        ctSlice = getSliceNumber();
-        nmSlice = (ctSlice + dZ) * abs(ct_depth / nm_depth);
-    
-        // Check we are not going off the end of the NM image
-        if (round(nmSlice) > nmSlicesMax-1){
-            nmSlice = nmSlicesMax-1;
-        }
 
-        print("[" + i +"] CT Slice: " + ctSlice + " ---> NM Slice: " + nmSlice + " (" + round(nmSlice) + ")" );
+        // Get the position of this slice
+        CTdicom = split(getInfo("0020,0032"),"\\");
+        ctSlice = getSliceNumber();
+
+        // Calculate the NM slice for that position
+        nmSlice = ((parseFloat(CTdicom[2]) - nmStart) / nm_depth) +1;
+
+
+        // // Check we are not going off the end of the NM image
+        // if (round(nmSlice) > nmSlicesMax-1){
+        //     nmSlice = nmSlicesMax-1;
+        // }
+
+        // print("[" + i +"] CT Slice: " + ctSlice + " ---> NM Slice: " + nmSlice + " (" + round(nmSlice) + ")" );
 
         selectWindow("NM");
         moveROIslice(round(nmSlice));
@@ -468,27 +482,28 @@ function ctToNMROImanager(NMname, CTname, dZ){
     currentSlice = -99;
     if (count > 1){
     
-        //print("will process " + count + " rois");
+        // print("will process " + count + " rois");
         for (i = 0; i < count; i++) { 
-            //print("i="+i);
+            
             roiManager("select", i);
             thisSlice = getSliceNumber();
-        
+            // print("i="+i+ " slice = " + thisSlice);
             if (i == 0){
                 currentSlice = thisSlice;
                 mergeArray = newArray(1);
                 mergeArray[0] = 0;
+                // print("FIRST set: " + currentSlice);
             }
             else{            
                 if (thisSlice == currentSlice){
                     // Add to the array of slices to merge
                     mergeArray = Array.concat(mergeArray, i);
                 }
-                if ((thisSlice > currentSlice) || (i == count-1)){
+                if ((thisSlice > currentSlice) || (thisSlice < currentSlice) || (i == count-1)){
                     // Merge the array and set current slice
-                    //print(thisSlice + " > " + currentSlice);
-                    //print("Will merge ROIs:");
-                    //Array.print(mergeArray);
+                    // print(thisSlice + " < " + currentSlice);
+                    // print("Will merge ROIs:");
+                    // Array.print(mergeArray);
                 
                     currentSlice = thisSlice;
                 

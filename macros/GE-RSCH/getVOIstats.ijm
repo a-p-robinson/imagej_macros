@@ -13,7 +13,7 @@ macro "getVOIstats" {
     openCTData(cameraID, phantomID); 
 
     // Open the ROIs
-    openROI(cameraID, phantomID, "_CT_NM");
+    openROI(cameraID, phantomID, roiID);
     
     // Open the Nuc Med reconstructed image
     openNMData(cameraID, phantomID);

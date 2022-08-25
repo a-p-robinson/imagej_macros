@@ -19,22 +19,22 @@ macro "makeNucMedROI" {
     openNMData(cameraID, phantomID);
 
 
-    // Calculate the alignment of CT and NM in mm
-    delta = calcNMCTalignment("NM", "CT");
+    // Calculate the alignment of CT and NM in voxels
+    delta = calcNMCTalignmentXY("NM", "CT");
     scale = calcNMCTscale("NM", "CT");
     Array.print(delta);
-    Array.print(scale);
+    // Array.print(scale);
 
-    // Translate the ROIs from CT to NM in X and Y
+    // Translate the ROIs from CT to NM in X and Y voxels
     selectWindow("CT");
     translateROImanagerdXdY(delta[0], delta[1]);
-    
+
     // Scale the ROIS to NM on CT (most accrate)
     selectWindow("CT");
     scaleROImanager(scale[0]);
 
     // Translate the ROIs from CT to NM in Z
-    ctToNMROImanager("NM", "CT", delta[2]);
+    ctToNMROImanagerZ("NM", "CT");
 
     // Save the ROI dataset
     roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";

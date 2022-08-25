@@ -28,7 +28,6 @@ macro "cylinderROI" {
 
     selectWindow("CT");
     setKeyDown("alt"); ct_y = getProfile();
-    
 
     threshold = -1200;
     centreCT[0] = centreProfile(ct_x, threshold);
