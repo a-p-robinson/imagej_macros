@@ -21,7 +21,7 @@ macro "getVOIstats" {
     // Get the VOI stats
     //
     // Get total counts in VOI
-    selectWindow("NM");
+    selectWindow("CT");
     test = countsROImanager();
     print("Voi Counts : " + test);
 

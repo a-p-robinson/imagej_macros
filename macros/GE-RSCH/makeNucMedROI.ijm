@@ -18,7 +18,6 @@ macro "makeNucMedROI" {
     // Open the Nuc Med reconstructed image
     openNMData(cameraID, phantomID);
 
-
     // Calculate the alignment of CT and NM in voxels
     delta = calcNMCTalignmentXY("NM", "CT");
     scale = calcNMCTscale("NM", "CT");

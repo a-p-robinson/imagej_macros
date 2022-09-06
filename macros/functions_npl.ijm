@@ -110,6 +110,26 @@ function openCTData(cameraID, phantomID){
         CTslices = 80;
     }
 
+    if (cameraID == "DR" && phantomID == "2-Organ"){
+        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/DR/2-Organ/CT/CTSoftTissue1.25mmSPECTCT_H_1001_CT001.dcm";
+        CTslices = 321;
+    }
+
+    if (cameraID == "Optima" && phantomID == "2-Organ"){
+        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/Optima/2-Organ/CT/CTSPECT-CT_H_1001_CT001.dcm";
+        CTslices = 161;
+    }
+
+    if (cameraID == "CZT-WEHR" && phantomID == "2-Organ"){
+        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/WEHR/2-Organ/CT/CTAC5mmTomoLu-177_H_1001_CT001.dcm";
+        CTslices = 80;
+    }
+
+    if (cameraID == "CZT-MEHRS" && phantomID == "2-Organ"){
+        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/WEHR/2-Organ/CT/CTAC5mmTWOORGANMEHRS_H_1001_CT001.dcm";
+        CTslices = 80;
+    }
+
     run("Image Sequence...", "open=" + CTfile + " number=" + CTslices + " starting=1 increment=1 scale=100 file=[] sort");
     rename("CT");
 }
@@ -119,6 +139,7 @@ function openROI(cameraID, phantomID, roiID){
 
     roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + roiID + "_RoiSet_XYZ.zip";
     roiManager("Open",roiFile);
+    roiManager("Sort");
 
 }
 
@@ -179,6 +200,23 @@ function openNMData(cameraID, phantomID){
 
     if (cameraID == "CZT-MEHRS" && phantomID == "Sphere2"){
         NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/MEHRS/Sphere2/Recon/SPHERES2MEHRS_EM2_IRAC001_DS.dcm";
+    }
+
+
+    if (cameraID == "DR" && phantomID == "2-Organ"){
+        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/DR/2-Organ/Recon/SPECTCT_EM2_IRAC001_DS.dcm";
+    }
+
+    if (cameraID == "Optima" && phantomID == "2-Organ"){
+        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/Optima/2-Organ/Recon/SPECT-CT_EM2_IRAC001_DS.dcm";      
+    }
+
+    if (cameraID == "CZT-WEHR" && phantomID == "2-Organ"){
+        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/WEHR/2-Organ/Recon/TomoLu-177_EM2_IRAC001_DS.dcm";
+    }
+
+    if (cameraID == "CZT-MEHRS" && phantomID == "2-Organ"){
+        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/MEHRS/2-Organ/Recon/TWOORGANMEHRS_EM2_IRAC001_DS.dcm";
     }
 
     open(NMfile);
@@ -482,17 +520,20 @@ function ctToNMROImanagerZ(NMname, CTname){
     currentSlice = -99;
     if (count > 1){
     
-        // print("will process " + count + " rois");
+        print("will process " + count + " rois");
+
+        //Keep track of how many ROIS we merged
+        nMerged = 0;
         for (i = 0; i < count; i++) { 
             
             roiManager("select", i);
             thisSlice = getSliceNumber();
-            // print("i="+i+ " slice = " + thisSlice);
+            print("i="+i+ " slice = " + thisSlice);
             if (i == 0){
                 currentSlice = thisSlice;
                 mergeArray = newArray(1);
                 mergeArray[0] = 0;
-                // print("FIRST set: " + currentSlice);
+                print("FIRST set: " + currentSlice);
             }
             else{            
                 if (thisSlice == currentSlice){
@@ -501,9 +542,9 @@ function ctToNMROImanagerZ(NMname, CTname){
                 }
                 if ((thisSlice > currentSlice) || (thisSlice < currentSlice) || (i == count-1)){
                     // Merge the array and set current slice
-                    // print(thisSlice + " < " + currentSlice);
-                    // print("Will merge ROIs:");
-                    // Array.print(mergeArray);
+                    print(thisSlice + " < or > " + currentSlice);
+                    print("Will merge ROIs:");
+                    Array.print(mergeArray);
                 
                     currentSlice = thisSlice;
                 
@@ -512,11 +553,16 @@ function ctToNMROImanagerZ(NMname, CTname){
                         roiManager("select", mergeArray);
                         roiManager("Or");
                         roiManager("Add");
+                        print("MERGED");
+                        nMerged = nMerged + mergeArray.length;
+                        print("nMERGED = "+ nMerged);
                     }
                     else{
-                        // We may have a single ROI ona  slice in which we don't need to merge
+                        // We may have a single ROI on a  slice in which we don't need to merge
                         roiManager("select", mergeArray);
                         roiManager("Add");
+                        nMerged = nMerged + mergeArray.length;
+                        print("nMERGED = "+ nMerged);
                     }
                     // Reset array
                     mergeArray = newArray(1);
@@ -525,8 +571,12 @@ function ctToNMROImanagerZ(NMname, CTname){
             }
         }
 
+        print("Need to delete "+ nMerged);
+
         // Delete the original ROIS (can I do this in one loop?)
-        for (i = 0; i < count; i++) { 
+        for (i = 0; i < nMerged; i++) { 
+            roiManager("deselect");
+            print("Deleting " + i);
             roiManager("select", 0);
             roiManager("delete");   
         }
