@@ -1,0 +1,18 @@
+/home/apr/Science/GE-RSCH/QI/analysis/ListModeProcessing/EM1-SinglesXZ.img
+/home/apr/Science/GE-RSCH/QI/analysis/ListModeProcessing/SC1-SinglesXZ.img
+/home/apr/Science/GE-RSCH/QI/analysis/ListModeProcessing/SC2-SinglesXZ.img
+1
+DR_Planar_113
+DR_Planar_113
+/home/apr/repos/NPL-ImageJ/macros/NPL
+22.5
+113
+6.88
+98.5
+7.74
+129
+raw
+256
+2
+16-bit Unsigned
+little-endian
