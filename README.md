@@ -18,5 +18,8 @@ The Fiji software can be installed anywhere you have write permission (`$FIJI_PA
 
 ## macros
 
-- [ ] Add description of code and projects
-
+- [ ] Add better description of code and projects
+- [ ] Modify run scripts to use multiple libraries
+- [ ] Set defaults file locations based on repo structure
+- [ ] Add a `build_library_txt.sh`` script
+- [ ] Add unit tests
