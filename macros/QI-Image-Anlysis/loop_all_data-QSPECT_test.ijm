@@ -1,10 +1,24 @@
 /* 
     Get the stats for all datasets into a table
 */
+
+var DATA_DIR = "/home/apr/Science/GE-RSCH/QI/data/Reconstruction/QI_Testing/";
+var RESULTS_DIR = "/home/apr/Science/GE-RSCH/QI/analysis-clean/image-analysis/results/";
+
 macro "loop_all_data" {
 
     cameraID = "DR";
-    windowName = "EM1";
+    windowName = "EM2";
+    phantoms = newArray("Cylinder","Sphere1","Sphere2","2-Organ");
+    corrections = newArray("NC","AC","ACSC","ACRR","ACSCRR","QSPECT");
+    //corrections = newArray("NC","AC","ACSC","ACRR","ACSCRR");
+    //itt = newArray(1,2,3,4,5,10,20,30,40,50);
+    itt = newArray(1);
+    itt[0] = 30;
+
+    filename_first = "SPECTCT_";
+    filename_last = "001_DS.dcm";
+    subsets = 5;
 
     // Create output tables
     // Make a Table for output
@@ -17,8 +31,6 @@ macro "loop_all_data" {
     jj= 0;
 
     // Loop through all the phantoms
-    phantoms = newArray("Cylinder","Sphere1","Sphere2","2-Organ");
-
     for (p = 0; p < phantoms.length; p++){
 
         phantomID = phantoms[p];
@@ -40,20 +52,31 @@ macro "loop_all_data" {
             rois = newArray("_CT_spleen_NM","_CT_cortex_NM","_CT_medulla_NM");
         }
         
-        // Loop through corrections
-        corrections = newArray("NC","AC","ACSC");
-                                   
+        // Loop through corrections                                  
         for (c = 0; c < corrections.length; c++){
             
             // Loop through reconstruction itterations
-            itt = newArray(1,2,3,4,5,10,20,30,40,50);
-
             for (i = 0; i < itt.length; i++){
 
                 print(phantoms[p] + ":" + corrections[c] + ":" + itt[i]);
 
+                // Overrides
+                corrections_tmp = corrections[c];
+                filename_tmp = filename_first;
+
+                if (phantomID == "Sphere2") {
+                    filename_tmp = "SPHERES2_";
+                }
+                // Modify "QSPECT"
+                if (corrections[c] == "QSPECT"){
+                    corrections_tmp = "ACSCRR";
+                    filename_tmp = "Q." + filename_tmp;
+                }
+                
+                fileName = DATA_DIR+cameraID+"/"+phantomID+"/" + windowName + "/SS" + subsets + "_IT" + itt[i] + "/" + filename_tmp +windowName+"_IR"+corrections_tmp+filename_last;
+                print(fileName);
+
                 // Open the Nuc Med file
-                fileName = "/home/apr/Science/GE-RSCH/QI/data/Reconstruction/QI_01_09_22/"+cameraID+"/"+phantomID+"/" + windowName + "/SS5_IT" + itt[i] + "/SPECTCT_"+windowName+"_IR"+corrections[c]+"001_DS.dcm";
                 open(fileName);
                 rename(itt[i]);
                 run("Fire");
@@ -113,9 +136,9 @@ macro "loop_all_data" {
     // Save Tables
     selectWindow("VOI");
     Table.update;
-    Table.save(cameraID + "_" + windowName + "_VOIstats.csv"); 
+    Table.save(RESULTS_DIR + cameraID + "_" + windowName + "_VOIstats_QSPECT_Test.csv"); 
     selectWindow("Whole Image");
     Table.update;
-    Table.save(cameraID + "_" + windowName + "_WholeImagestats.csv"); 
+    Table.save(RESULTS_DIR + cameraID + "_" + windowName + "_WholeImagestats_QSPECT_Test.csv"); 
 
 }

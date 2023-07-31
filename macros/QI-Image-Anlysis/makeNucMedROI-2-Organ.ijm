@@ -3,8 +3,45 @@ Transfer a CT based ROI to a nuclear medicine image
 */
 macro "makeNucMedROI" {
 
-    // Get the data names from arguments
-    args = parseArguments();    
+    cameras = newArray("DR", "Optima","CZT-WEHR","CZT-MEHRS");
+    phantoms = newArray(1);
+    phantoms[0] = "2-Organ";
+    rois = newArray("_CT_spleen","_CT_cortex","_CT_medulla")
+
+    args = newArray(3);
+    // args[1] = "Cylinder";
+    // args[2] = "_CT";
+    
+    // Loop through all the cameras
+    for (c = 0; c < cameras.length; c++) {
+        // Loop through all the phantoms
+        for (p = 0; p < phantoms.length; p++) {
+
+            // Loop through all the rois
+            for (r = 0; r < rois.length; r++) {
+                
+                args[0] = cameras[c];
+                args[1] = phantoms[p];    
+                args[2] = rois[r];
+
+                run_me(args);
+
+                closeAllWindows();
+                closeAllImages();
+
+            }
+
+        }
+
+
+    }
+
+}
+
+function run_me(args){
+
+    // // Get the data names from arguments
+    // args = parseArguments();    
     cameraID = args[0];
     phantomID = args[1];
     roiID = args[2];
@@ -36,7 +73,7 @@ macro "makeNucMedROI" {
     ctToNMROImanagerZ("NM", "CT");
 
     // Save the ROI dataset
-    roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
+    //roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
     roiManager("Save", roiDirectory + cameraID + "_" + phantomID + roiID + "_NM_RoiSet_XYZ.zip");
 
 }

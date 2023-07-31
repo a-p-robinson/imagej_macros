@@ -1,13 +1,34 @@
 /* 
 Define a cylindrical ROI based on the centre of the phantom using CT
 */
+
 macro "cylinderROI" {
 
-    // Get the data names from arguments
-    args = parseArguments();    
+    cameras = newArray("DR", "Optima","CZT-WEHR","CZT-MEHRS");
+    args = newArray(3);
+    args[1] = "Cylinder";
+    args[2] = "_CT";
+    
+    // Loop through all the cameras
+    for (c = 0; c < cameras.length; c++){
+
+        args[0] = cameras[c];
+
+        run_me(args);
+
+        closeAllWindows();
+        closeAllImages();
+
+    }
+
+}
+
+function run_me(args){
+
     cameraID = args[0];
     phantomID = args[1];
     roiID = args[2];
+
 
     // Open the CT image
     // cameraID = "DR";
@@ -51,7 +72,7 @@ macro "cylinderROI" {
     createCylinder(centreCT[0], centreCT[1], centreCT[2], phantomRadius, phantomHeight);
 
     // Save the ROI dataset
-    roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
+    //roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
     roiManager("Save", roiDirectory + cameraID + "_" + phantomID + roiID + "_RoiSet_XYZ.zip");
 
 

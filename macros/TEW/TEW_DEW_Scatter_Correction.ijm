@@ -1,5 +1,5 @@
 // *************************************************
-// * SPECT projection TEW/DEW scatter corrcetion
+// * SPECT projection TEW/DEW scatter correction
 // * (based on Ogawa et al 1991)
 // *
 // * Generate TEW for all 177Lu data
@@ -397,7 +397,8 @@ function generateTEW(emID, sc1ID, sc2ID) {
 
     // SC1: Duplicate the image and store new ID
     selectImage(sc1ID);
-    dup = "title=SC1_contribution duplicate range=1-" + nSlices;
+    //dup = "title=SC1_contribution duplicate range=1-" + nSlices;
+    dup = "title=SC1_contribution duplicate";
     run("Duplicate...", dup);
     sc1ContID = getImageID();
     if (DEBUG > 1) print("sc1ContID = " + sc1ContID);
@@ -407,13 +408,14 @@ function generateTEW(emID, sc1ID, sc2ID) {
 
     // Scale the new image by scaleFac1
     selectImage(sc1ContID);
-    value = "value=" + scaleFac1;
+    value = "value=" + scaleFac1 + " stack";
     print("SC1 multiplying by " + value);
     run("Multiply...", value);
 
     // SC2: Duplicate the image and store new ID
     selectImage(sc2ID);
-    dup = "title=SC2_contribution duplicate range=1-" + nSlices;
+    //dup = "title=SC2_contribution duplicate range=1-" + nSlices;
+    dup = "title=SC2_contribution duplicate";
     run("Duplicate...", dup);
     sc2ContID = getImageID();
     if (DEBUG > 1) print("sc2ContID = " + sc2ContID);
@@ -423,7 +425,7 @@ function generateTEW(emID, sc1ID, sc2ID) {
 
     // Scale the new image by scaleFac2
     selectImage(sc2ContID);
-    value = "value=" + scaleFac2;
+    value = "value=" + scaleFac2 + " stack";
     print("SC2 multiplying by " + value);
     run("Multiply...", value);
     //---------------------------------------------------------------------------
