@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 // ***********************************************************************
 // * Load in a CT file and associated ROI set and 
 // *  - Get volume and surface area for 512x512 and 128x128 voxels

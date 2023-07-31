@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 // ***********************************************************************
 // * Partial Volume - whole VOI
 // * Get the limitis of integration of each voxel in the VOI

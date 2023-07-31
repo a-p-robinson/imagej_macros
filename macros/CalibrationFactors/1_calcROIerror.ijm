@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 // ***********************************************************************
 // * Calculate the ROI sets corresponding to the error in ROI definition
 // *

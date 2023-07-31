@@ -1,10 +1,32 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 /* 
 Define spherical ROIs for the NEMA phantom using CT
 */
-macro "sphereROI" {
+macro "sphereROI-NEMA" {
 
-    // Get the data names from arguments
-    args = parseArguments();    
+    cameras = newArray("DR", "Optima","CZT-WEHR","CZT-MEHRS");
+    args = newArray(3);
+    args[1] = "Sphere1";
+    args[2] = "NULL";
+    
+    // Loop through all the cameras
+    for (c = 0; c < cameras.length; c++){
+
+        args[0] = cameras[c];
+
+        run_me(args);
+
+        closeAllWindows();
+        closeAllImages();
+
+    }
+
+
+}
+
+function run_me(args){
+    // // Get the data names from arguments
+    // args = parseArguments();    
     cameraID = args[0];
     phantomID = args[1];
     roiID = args[2];
@@ -49,7 +71,7 @@ macro "sphereROI" {
 	    createSphere(sphereX[i],sphereY[i],sphereZ[i],radius[i]);
 
         // Save the ROI set
-        roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
+        //roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
         roiManager("Save", roiDirectory + cameraID + "_" + phantomID + "_CT_Sphere_" + i+1 + "_RoiSet_XYZ.zip");
         
         // Get some stats

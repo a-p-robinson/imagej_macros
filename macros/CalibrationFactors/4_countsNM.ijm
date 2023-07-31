@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 // ***********************************************************************
 // * Load in a CT file and associated ROI set and 
 // *  - scale ROis to NM with alignment

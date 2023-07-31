@@ -1,4 +1,4 @@
-
+// SPDX-License-Identifier: GPL-3.0-or-later
 // ***********************************************************************
 // * Common libary of ImageJ macro functions
 // * 
