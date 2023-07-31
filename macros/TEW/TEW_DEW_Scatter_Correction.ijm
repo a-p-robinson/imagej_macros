@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 // *************************************************
 // * SPECT projection TEW/DEW scatter correction
 // * (based on Ogawa et al 1991)

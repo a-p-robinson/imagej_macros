@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 /* 
 Transfer a CT based ROI to a nuclear medicine image
 */

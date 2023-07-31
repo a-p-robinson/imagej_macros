@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 /* 
 Define spherical ROIs for the NEMA phantom using CT
 */
