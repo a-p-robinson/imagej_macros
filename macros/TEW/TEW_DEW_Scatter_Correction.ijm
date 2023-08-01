@@ -901,3 +901,39 @@ function closeAllImages() {
     }
 }
 //---------------------------------------------------------------------------
+
+
+
+
+//*********************************************************************************
+// Tests:
+
+function test_closeAllWindows(){
+    // Once function has run no windows should be open
+    run("ROI Manager...");
+    closeAllWindows();
+    wins = getList("window.titles");
+    if (wins.length != 0){
+        print("test_closeAllWindows: failed [number of windows = "+ wins.length + "]");
+        exit();
+    }
+    else{
+            print("test_closeAllWindows: passed");
+    }
+ 
+}
+
+function test_closeAllimages(){
+    // Once function has been run no images should be open
+    open("/home/apr/Science/imagej_macros/macros/TEW/test_data/tomo.dcm");
+    closeAllImages();
+    imgs = getList("image.titles");
+    if (imgs.length != 0){
+        print("test_closeAllimages: failed [number of images = "+ imgs.length + "]");
+        exit();
+    }
+    else{
+            print("test_closeAllimages: passed");
+    }
+}
+
