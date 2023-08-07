@@ -908,6 +908,21 @@ function closeAllImages() {
 //*********************************************************************************
 // Tests:
 
+function test_printTime(){
+    // Check the format of the returned string.
+    // - Just check that it contains "Date:" and "Time:"
+    // - Don't worry about checking if the date and time is "correct"
+    
+    // indexOf(string, substring) != 0
+
+        t = printTime();
+        print(t);
+
+        //Date: Wed 02-Aug-2023 Time: 15:27:59
+
+
+}
+
 function test_closeAllWindows(){
     // Once function has run no windows should be open
     run("ROI Manager...");
