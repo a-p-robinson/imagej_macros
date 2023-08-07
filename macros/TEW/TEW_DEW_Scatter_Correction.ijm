@@ -908,7 +908,25 @@ function closeAllImages() {
 //*********************************************************************************
 // Tests:
 
-function test_meas
+function 
+test_loadUserInterface(){
+    // // Need to test that the UI has been opened after function is run
+    // // - Do we want to get the input data as well or is that an ImageJ function?
+    // // https://imagej.net/plugins/ij-robot
+
+    // // Open the interface
+ 
+    // // Close the interface (click OK)
+    
+    // loadUserInterface();
+    // //run("IJ Robot", "order=KeyPress x_point=0 y_point=0 delay=300 keypress=!");
+    // // Check the variables
+
+
+    // wins = getList("window.titles");
+    // Array.print(wins);    
+
+}
 
 function test_openImage(){
     // Open the image and see if the number of open images goes up by one
