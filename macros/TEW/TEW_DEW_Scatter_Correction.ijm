@@ -908,18 +908,43 @@ function closeAllImages() {
 //*********************************************************************************
 // Tests:
 
+function test_meas
+
+function test_openImage(){
+    // Open the image and see if the number of open images goes up by one
+    imgs = getList("image.titles");
+    number_open = imgs.length;
+
+    // Workout the path where the test data is
+    data_file =  "test_data/tomo.dcm";
+    path = getInfo("macro.filepath");
+    macro_name_position = indexOf(path, "_run.ijm");
+    data_file = substring(path,0,macro_name_position) + data_file;
+    
+    openImage(data_file);
+    imgs = getList("image.titles");
+
+    if(imgs.length > number_open){
+        print("test_openImage: passed");
+    }
+    else{
+        print("test_openImage: failed");
+        exit();
+    }
+}
+
 function test_printTime(){
     // Check the format of the returned string.
     // - Just check that it contains "Date:" and "Time:"
-    // - Don't worry about checking if the date and time is "correct"
-    
-    // indexOf(string, substring) != 0
-
-        t = printTime();
-        print(t);
-
-        //Date: Wed 02-Aug-2023 Time: 15:27:59
-
+    // - Don't worry about checking if the date and time are "correct"
+    t = printTime();
+    if (indexOf(t,"Date:") < 0 || indexOf(t,"Time:") < 0){
+        print("test_printTime: failed");
+        exit();
+    }
+    else{
+        print("test_printTime: passed");  
+    }
 
 }
 
@@ -940,7 +965,13 @@ function test_closeAllWindows(){
 
 function test_closeAllimages(){
     // Once function has been run no images should be open
-    open("/home/apr/Science/imagej_macros/macros/TEW/test_data/tomo.dcm");
+    
+    // Workout the path where the test data is
+    data_file =  "test_data/tomo.dcm";
+    path = getInfo("macro.filepath");
+    macro_name_position = indexOf(path, "_run.ijm");
+    data_file = substring(path,0,macro_name_position) + data_file;
+    open(data_file);
     closeAllImages();
     imgs = getList("image.titles");
     if (imgs.length != 0){
