@@ -412,7 +412,7 @@ function generateTEW(emID, sc1ID, sc2ID) {
     if (DEBUG > 1) print("sc1ContID = " + sc1ContID);
 
     // Calculate scaling factor
-    scaleFac1 = w_em / (2 * w_sc1);
+    scaleFac1 = parseFloat(w_em / (2 * w_sc1));
 
     // Scale the new image by scaleFac1
     selectImage(sc1ContID);
@@ -429,7 +429,7 @@ function generateTEW(emID, sc1ID, sc2ID) {
     if (DEBUG > 1) print("sc2ContID = " + sc2ContID);
 
     // Calculate scaling factor
-    scaleFac2 = w_em / (2 * w_sc2);
+    scaleFac2 = parseFloat(w_em / (2 * w_sc2));
 
     // Scale the new image by scaleFac2
     selectImage(sc2ContID);
@@ -468,7 +468,10 @@ function generateTEW(emID, sc1ID, sc2ID) {
     selectImage(em_tewID_nozero);
     getMinAndMax(min, max);
     if (DEBUG > 1) print("min value = " + min + " max value = " + max);
-    changeValues(min, 0.0, 0.0);
+    for (s = 1; s <= nSlices(); s++) {
+        setSlice(s);
+        changeValues(min, 0.0, 0.0);
+    }
 
     // Duplicate the image and floor values (round down)
     selectImage(em_tewID_nozero);
@@ -485,7 +488,7 @@ function generateTEW(emID, sc1ID, sc2ID) {
         for (x = 0; x < width; x++) {
             for (y = 0; y < height; y++) {
                 pval = getPixel(x, y);
-                setPixel(x, y, floor(pval));
+                setPixel(x, y, floor(pval)); 
             }
         }
     }
@@ -632,14 +635,14 @@ function analyseTEW(outputName) {
     print(f, printTime() + "\n\n");
 
     // Get the counts in each image
-    countsEM = measureWholeImageNC(emID);
-    countsSC1 = measureWholeImageNC(sc1ContID);
-    countsSC2 = measureWholeImageNC(sc2ContID);
-    countsTEW = measureWholeImageNC(tewID);
+    countsEM = measureWholeImage(emID);
+    countsSC1 = measureWholeImage(sc1ContID);
+    countsSC2 = measureWholeImage(sc2ContID);
+    countsTEW = measureWholeImage(tewID);
 
-    countsEM_TEW_f = measureWholeImageNC(em_tewID_f);
-    countsEM_TEW_nozero = measureWholeImageNC(em_tewID_nozero);
-    countsEM_TEW_unsigned = measureWholeImageNC(em_tewID_unsigned);
+    countsEM_TEW_f = measureWholeImage(em_tewID_f);
+    countsEM_TEW_nozero = measureWholeImage(em_tewID_nozero);
+    countsEM_TEW_unsigned = measureWholeImage(em_tewID_unsigned);
 
 
     // Loop through EM and get number of effected pixels for each correction
@@ -809,9 +812,9 @@ function analyseTEW(outputName) {
 
 
 //---------------------------------------------------------------------------
-// Measure total counst in stack on the image specified by sourceID 
-// - Return the total counts in image (use an array for compatability with measureROIs())
-function measureWholeImageNC(sourceID) {
+// Measure total counts in stack on the image specified by sourceID 
+// - Return the total counts in image (use an array for compatibility with measureROIs())
+function measureWholeImage(sourceID) {
 
     if (DEBUG > 1) print("Analysing W.I...");
 
@@ -914,6 +917,131 @@ function closeAllImages() {
 
 //*********************************************************************************
 // Tests:
+
+function test_generateTEW(){
+    // Need to check:
+    // - Scale factors are set correctly
+    // - That we have a window called TEW
+    // - x3 scatter corrected images (EM-TEW_float, EM-TEW_nozero, EM-TEW_unsigned)
+    // - Also SC1_contribution and SC2_cointribution
+    // - Also need to check that we have the right numbers in each image
+    //      - This will test if we have done all the slices
+    // - Need to check this for a planar and a tomo image
+
+    closeAllImages();
+    useRaw = 0;
+
+    // We have tested parseInputFile() so we will use that.
+    path = getInfo("macro.filepath");
+    macro_name_position = indexOf(path, "_run.ijm");
+    input_file = "inputfiles-tew/test_input_dicom_header.txt";
+    input_file = substring(path,0,macro_name_position) + input_file;
+    parseInputFile(input_file);
+
+    // We have also tested loadTEW() so we can use that
+    loadTEW();
+
+    // Now we can test generateTEW()
+    generateTEW(emID, sc1ID, sc2ID);
+
+    // Check we have the expected windows
+    selectImage(sc1ContID);
+    if(getTitle() != "SC1_contribution"){
+        print("test_generateTEW: failed [SC1_contribution]");
+        exit();
+    }
+    selectImage(sc2ContID);
+    if(getTitle() != "SC2_contribution"){
+        print("test_generateTEW: failed [SC1_contribution]");
+        exit();
+    }
+    selectImage(tewID);
+    if(getTitle() != "TEW"){
+        print("test_generateTEW: failed [TEW]");
+        exit();
+    }
+    selectImage(em_tewID_f);
+    if(getTitle() != "EM-TEW_float"){
+        print("test_generateTEW: failed [EM-TEW_float]");
+        exit();
+    }
+    selectImage(em_tewID_nozero);
+    if(getTitle() != "EM-TEW_nozero"){
+        print("test_generateTEW: failed [EM-TEW_nozero]");
+        exit();
+    }
+    selectImage(em_tewID_unsigned);
+    if(getTitle() != "EM-TEW_unsigned"){
+        print("test_generateTEW: failed [EM-TEW_unsigned]");
+        exit();
+    }
+
+    // Check the scale factors
+    if (scaleFac1 != parseFloat(41.6/(2.0*10.86))){
+        print("test_generateTEW: failed [scaleFac1]");
+        exit();
+    }
+    if (scaleFac2 != parseFloat(41.6/(2.0*14.16))){
+        print("test_generateTEW: failed [scaleFac2]");
+        exit();
+    }
+
+    // Get the counts in each image and check that they are correct
+    // Need to have checked the function first
+    counts_sc1Cont = measureWholeImage(sc1ContID);
+    counts_sc2Cont = measureWholeImage(sc2ContID);
+    counts_tew = measureWholeImage(tewID);
+    counts_em_tew_f = measureWholeImage(em_tewID_f);
+    counts_em_tew_nozero = measureWholeImage(em_tewID_nozero);
+    counts_em_tew_unsigned = measureWholeImage(em_tewID_unsigned);
+    
+    if(counts_sc1Cont[0] != (64*64*10000*120*scaleFac1)){
+        print("test_generateTEW: failed [counts_sc1Cont]");
+        exit();
+    }
+    if(counts_sc2Cont[0] != (64*64*10000*120*scaleFac2)){
+        print("test_generateTEW: failed [counts_sc2Cont]");
+        exit();
+    }
+    if(counts_tew[0] != counts_sc1Cont[0]+counts_sc2Cont[0]){
+        print("test_generateTEW: failed [counts_tew]");
+        exit(); 
+    }
+    if(counts_em_tew_nozero[0] != (32*32*120*2*10000)){
+        print("test_generateTEW: failed [counts_em_tew_nozero]");
+        exit(); 
+    }
+    if(counts_em_tew_unsigned[0] != (32*32*120*2*10000)){
+        print("test_generateTEW: failed [counts_em_tew_unsigned]");
+        exit(); 
+    }
+    if(counts_em_tew_f[0] != (32*32*120*10000)*(2 - (3*scaleFac1) - (3*scaleFac2) + (1-scaleFac1) + (1-scaleFac2))){
+        print("test_generateTEW: failed [counts_em_tew_f]");
+        exit();
+    }
+
+    print("+++test_generateTEW: passed+++");
+
+
+}
+
+function test_measureWholeImage(){
+    // Load a specific file and see that we get the correct number of counts
+    pathEM = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/EM_ge.dcm";
+    open(pathEM);
+    imageID = getImageID();
+    counts = measureWholeImage(imageID);
+    close();
+
+    if(counts[0] != 64*64*10000*120){
+        print("test_measureWholeImage: failed");
+        exit();
+    }
+
+    print("+++test_measureWholeImage: passed+++");
+
+}
+
 
 function test_loadTEW(){
     // Check that the correct files are loaded (or just that a file is loaded?) based on the variables
