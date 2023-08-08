@@ -12,6 +12,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("dicomfile", help="Original GE Xelris DICOM file")
     parser.add_argument("outputfile", help="Modified DICOM file")
+    parser.add_argument("position", help="Position of data (left, middle, right)")
+
     args = parser.parse_args()
 
     # Open the input file
@@ -37,8 +39,14 @@ def main():
     # Create a single frame
     frame_value = 10000
     frame = np.zeros((arr.shape[1], arr.shape[2]), dtype=arr.dtype)
-    frame[int(frame.shape[0]*0.25):int(frame.shape[0]*0.75), int(frame.shape[1]*0.25):int(frame.shape[1]*0.75)] = frame_value
-    
+
+    if args.position == "middle" :
+        frame[int(frame.shape[0]*0.25):int(frame.shape[0]*0.75), int(frame.shape[1]*0.25):int(frame.shape[1]*0.75)] = frame_value
+    if args.position == "left" :
+        frame[int(frame.shape[0]*0.0):int(frame.shape[0]*0.5), int(frame.shape[1]*0.0):int(frame.shape[1]*0.5)] = frame_value
+    if args.position == "right" :
+        frame[int(frame.shape[0]*0.5):int(frame.shape[0]*1.0), int(frame.shape[1]*0.5):int(frame.shape[1]*1.0)] = frame_value
+
     # Set each frame
     for i in range(arr.shape[0]) :
         arr[i] = frame
