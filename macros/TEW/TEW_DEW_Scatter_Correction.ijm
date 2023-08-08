@@ -915,6 +915,183 @@ function closeAllImages() {
 //*********************************************************************************
 // Tests:
 
+function test_loadTEW(){
+    // Check that the correct files are loaded (or just that a file is loaded?) based on the variables
+    // - Needs to check DICOM, RAW and get widths
+
+    // DICOM
+    useFloat = 1;
+    useRaw = 0;
+    getWidths = 1;
+    pathEM = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/EM_ge.dcm";
+    pathSC1 = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/SC1_ge.dcm";
+    pathSC2 = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/SC2_ge.dcm";
+
+    loadTEW();
+
+    // Check we have all 3 windows
+    selectImage(emID);
+    if(getTitle() != "EM"){
+        print("test_loadTEW: failed [EM - DICOM] ");
+        exit();
+    }
+    selectImage(sc1ID);
+    if(getTitle() != "SC1"){
+        print("test_loadTEW: failed [SC1 - DICOM] ");
+        exit();
+    }
+    selectImage(sc2ID);
+    if(getTitle() != "SC2"){
+        print("test_loadTEW: failed [SC2 - DICOM] ");
+        exit();
+    }
+    
+    // Check widths are set correctly
+    if (parseFloat(w_em) != 41.6){
+        print("test_loadTEW: failed [getWidths] ");
+        exit();
+    }
+    if (parseFloat(w_sc1) != 10.86){
+        print("test_loadTEW: failed [getWidths]");
+        exit();
+    }
+    if (parseFloat(w_sc2) != 14.16){
+        print("test_loadTEW: failed [getWidths]");
+        exit();
+    }
+
+    // Check we have floats
+    selectImage(emID);
+    if(bitDepth() != 32){
+        print("test_loadTEW: failed [EM float - DICOM] ");
+        exit();
+    }
+    selectImage(sc1ID);
+    if(bitDepth() != 32){
+        print("test_loadTEW: failed [SC1 float - DICOM] ");
+        exit();
+    }
+    selectImage(sc2ID);
+    if(bitDepth() != 32){
+        print("test_loadTEW: failed [SC2 float - DICOM] ");
+        exit();
+    }
+    
+    // DICOM - Manual widths
+    useFloat = 0;
+    useRaw = 0;
+    getWidths = 0;
+    pathEM = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/EM_ge.dcm";
+    pathSC1 = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/SC1_ge.dcm";
+    pathSC2 = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/SC2_ge.dcm";
+
+    w_em = 99;
+    w_sc1 = 99;
+    w_sc2 = 99;
+
+    closeAllImages();
+    loadTEW();
+
+    // Check we have all 3 windows
+    selectImage(emID);
+    if(getTitle() != "EM"){
+        print("test_loadTEW: failed [EM - DICOM] ");
+        exit();
+    }
+    selectImage(sc1ID);
+    if(getTitle() != "SC1"){
+        print("test_loadTEW: failed [SC1 - DICOM] ");
+        exit();
+    }
+    selectImage(sc2ID);
+    if(getTitle() != "SC2"){
+        print("test_loadTEW: failed [SC2 - DICOM] ");
+        exit();
+    }
+
+    // Check widths are set correctly
+    if (parseFloat(w_em) != 99){
+        print("test_loadTEW: failed [manualWidths] ");
+        exit();
+    }
+    if (parseFloat(w_sc1) != 99){
+        print("test_loadTEW: failed [manualWidths]");
+        exit();
+    }
+    if (parseFloat(w_sc2) != 99){
+        print("test_loadTEW: failed [manualWidths]");
+        exit();
+    }
+
+    // Check we have don'tfloats
+    selectImage(emID);
+    if(bitDepth() != 16){
+        print("test_loadTEW: failed [EM not float - DICOM] ");
+        exit();
+    }
+    selectImage(sc1ID);
+    if(bitDepth() != 16){
+        print("test_loadTEW: failed [SC1 not float - DICOM] ");
+        exit();
+    }
+    selectImage(sc2ID);
+    if(bitDepth() != 16){
+        print("test_loadTEW: failed [SC2 not float - DICOM] ");
+        exit();
+    }
+
+   // RAW
+   pathEM = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/EM_ge.img";
+   pathSC1 = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/SC1_ge.img";
+   pathSC2 = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/SC2_ge.img";
+   getWidths = 0;
+   w_em = 41.6;
+   w_sc1 = 10.86;
+   w_sc2 = 14.16;
+   useRaw = 1;
+   rawSize   = "128";
+   rawNum    = "120";
+   rawType   = "16-bit Unsigned";
+   rawEndian = "little-endian";
+
+    closeAllImages();
+    loadTEW();
+    
+    // Check we have all 3 windows
+    selectImage(emID);
+    if(getTitle() != "EM"){
+        print("test_loadTEW: failed [EM - RAW] ");
+        exit();
+    }
+    selectImage(sc1ID);
+    if(getTitle() != "SC1"){
+        print("test_loadTEW: failed [SC1 - RAW] ");
+        exit();
+    }
+    selectImage(sc2ID);
+    if(getTitle() != "SC2"){
+        print("test_loadTEW: failed [SC2 - RAW] ");
+        exit();
+    }
+
+    // Check widths are set correctly
+    if (parseFloat(w_em) != 41.6){
+        print("test_loadTEW: failed [manualWidths - raw] ");
+        exit();
+    }
+    if (parseFloat(w_sc1) != 10.86){
+        print("test_loadTEW: failed [manualWidths - raw]");
+        exit();
+    }
+    if (parseFloat(w_sc2) != 14.16){
+        print("test_loadTEW: failed [manualWidths - raw]");
+        exit();
+    }
+
+    print("+++test_loadTEW: passed+++");
+
+}
+
 function test_parseInputFile(){
     // Need to read in the input file and then test the variables are set correctly
     // - File 1: DICOM
@@ -1139,7 +1316,7 @@ function test_parseInputFile(){
         exit();
     }
 
-    print("test_parseInputFile: passed");  
+    print("+++test_parseInputFile: passed+++");  
 }
 
 function test_loadUserInterface(){
@@ -1176,7 +1353,7 @@ function test_openImage(){
     imgs = getList("image.titles");
 
     if(imgs.length > number_open){
-        print("test_openImage: passed");
+        print("+++test_openImage: passed+++");
     }
     else{
         print("test_openImage: failed");
@@ -1194,7 +1371,7 @@ function test_printTime(){
         exit();
     }
     else{
-        print("test_printTime: passed");  
+        print("+++test_printTime: passed+++");  
     }
 
 }
@@ -1209,7 +1386,7 @@ function test_closeAllWindows(){
         exit();
     }
     else{
-            print("test_closeAllWindows: passed");
+            print("+++test_closeAllWindows: passed+++");
     }
  
 }
@@ -1230,7 +1407,7 @@ function test_closeAllimages(){
         exit();
     }
     else{
-            print("test_closeAllimages: passed");
+            print("+++test_closeAllimages: passed+++");
     }
 }
 
