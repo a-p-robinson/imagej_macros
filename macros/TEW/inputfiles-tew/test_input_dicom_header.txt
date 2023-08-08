@@ -1,0 +1,7 @@
+/var/home/apr/Science/imagej_macros/macros/TEW/test_data/EM_ge.dcm
+/var/home/apr/Science/imagej_macros/macros/TEW/test_data/SC1_ge.dcm
+/var/home/apr/Science/imagej_macros/macros/TEW/test_data/SC2_ge.dcm
+1
+test_input_dicom_header
+test_input_dicom_header
+/tmp/

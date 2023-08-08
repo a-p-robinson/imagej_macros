@@ -200,7 +200,7 @@ function loadUserInterface() {
 // line  2: SC1 window file
 // line  3: SC2 window file
 // line  4: Use floats for calculations? (0=no / 1=yes)
-// line  5: Output filename
+// line  5: Report filename
 // line  6: Scan Name
 // line  7: Path to write output to
 // line  8: (opt) Width EM1
@@ -209,6 +209,12 @@ function loadUserInterface() {
 // line 11: (opt) Energy SC2
 // line 12: (opt) Width SC2
 // line 13: (opt) Energy SC2
+// line 14: (opt) Read raw data? (raw)
+// line 15: (opt) Size of raw data (ie, 128 - 128x128)
+// line 16: (opt) Number of raw frames
+// line 17: (opt) Raw data type
+// line 18: (opt) Raw data endian
+
 function parseInputFile(inputFile) {
 
     // Open input file and read lines
@@ -224,10 +230,11 @@ function parseInputFile(inputFile) {
     pathSC1 = lines[1];
     pathSC2 = lines[2];
     useFloat = parseInt(lines[3]);
-    reportFileName = lines[4];
 
+    reportFileName = lines[4];
     scanName = lines[5];
     outputPath = lines[6];
+
     getWidths = 1;
 
     if (lines.length > 7) {
@@ -908,8 +915,234 @@ function closeAllImages() {
 //*********************************************************************************
 // Tests:
 
-function 
-test_loadUserInterface(){
+function test_parseInputFile(){
+    // Need to read in the input file and then test the variables are set correctly
+    // - File 1: DICOM
+    // - File 2: DICOM + manual widths
+    // - File 3: Raw
+
+    // Workout the path where the input files are
+    path = getInfo("macro.filepath");
+    macro_name_position = indexOf(path, "_run.ijm");
+
+    // Test file 1:
+    file_num = 1;
+    input_file = "inputfiles-tew/test_input_dicom_header.txt";
+    input_file = substring(path,0,macro_name_position) + input_file;
+    parseInputFile(input_file);
+
+    // Check variables - Test File 1
+    test_pathEM = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/EM_ge.dcm";
+    test_pathSC1 = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/SC1_ge.dcm";
+    test_pathSC2 = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/SC2_ge.dcm";
+    test_useFloat = 1;
+    test_reportFileName = "test_input_dicom_header";
+    test_scanName = "test_input_dicom_header";
+    test_outputPath = "/tmp/";
+    test_getWidths = 1;
+
+    if (pathEM != test_pathEM){
+        print(file_num + ": test_parseInputFile: failed [pathEM]");
+        exit();
+    }
+    if (pathSC1 != test_pathSC1){
+        print(file_num + ": test_parseInputFile: failed [pathSC1]");
+        exit();
+    }
+    if (pathSC2 != test_pathSC2){
+        print(file_num + ": test_parseInputFile: failed [pathSC2]");
+        exit();
+    }
+    if (useFloat != test_useFloat){
+        print(file_num + ": test_parseInputFile: failed [useFloat]");
+        exit();
+    }
+    if (reportFileName != test_reportFileName){
+        print(file_num + ": test_parseInputFile: failed [reportFileName]");
+        exit();
+    }
+    if (scanName != test_scanName){
+        print(file_num + ": test_parseInputFile: failed [scanName]");
+        exit();
+    }
+    if (outputPath != test_outputPath){
+        print(file_num + ": test_parseInputFile: failed [outputPath]");
+        exit();
+    }
+    if (getWidths != test_getWidths){
+        print(file_num + ": test_parseInputFile: failed [getWidths]");
+        exit();
+    }
+    
+    // Test file 2:
+    file_num = 2;
+    input_file = "inputfiles-tew/test_input_dicom_widths.txt";
+    input_file = substring(path,0,macro_name_position) + input_file;
+    parseInputFile(input_file);
+
+    // Check variables - Test File 2
+    test_getWidths = 0;
+    test_w_em = 41.6;
+    test_p_em = 208;
+    test_w_sc1 = 10.86;
+    test_p_sc1 = 181;
+    test_w_sc2 = 14.16;
+    test_p_sc2 = 236;
+
+    if (pathEM != test_pathEM){
+        print(file_num + ": test_parseInputFile: failed [pathEM]");
+        exit();
+    }
+    if (pathSC1 != test_pathSC1){
+        print(file_num + ": test_parseInputFile: failed [pathSC1]");
+        exit();
+    }
+    if (pathSC2 != test_pathSC2){
+        print(file_num + ": test_parseInputFile: failed [pathSC2]");
+        exit();
+    }
+    if (useFloat != test_useFloat){
+        print(file_num + ": test_parseInputFile: failed [useFloat]");
+        exit();
+    }
+    if (reportFileName != test_reportFileName){
+        print(file_num + ": test_parseInputFile: failed [reportFileName]");
+        exit();
+    }
+    if (scanName != test_scanName){
+        print(file_num + ": test_parseInputFile: failed [scanName]");
+        exit();
+    }
+    if (outputPath != test_outputPath){
+        print(file_num + ": test_parseInputFile: failed [outputPath]");
+        exit();
+    }
+    if (getWidths != test_getWidths){
+        print(file_num + ": test_parseInputFile: failed [getWidths]");
+        exit();
+    }
+    if (w_em != test_w_em){
+        print(file_num + ": test_parseInputFile: failed [test_w_em]");
+        exit();
+    }
+    if (p_em != test_p_em){
+        print(file_num + ": test_parseInputFile: failed [test_p_em]");
+        exit();
+    }
+    if (w_sc1 != test_w_sc1){
+        print(file_num + ": test_parseInputFile: failed [test_w_sc1]");
+        exit();
+    }
+    if (p_sc1 != test_p_sc1){
+        print(file_num + ": test_parseInputFile: failed [test_p_sc1]");
+        exit();
+    }
+    if (w_sc2 != test_w_sc2){
+        print(file_num + ": test_parseInputFile: failed [test_w_sc2]");
+        exit();
+    }
+    if (p_sc2 != test_p_sc2){
+        print(file_num + ": test_parseInputFile: failed [test_w_sc2]");
+        exit();
+    }
+    
+    // Test file 3:
+    file_num = 3;
+    input_file = "inputfiles-tew/test_input_raw.txt";
+    input_file = substring(path,0,macro_name_position) + input_file;
+    parseInputFile(input_file);
+
+    // Check variables - Test File 3
+    test_pathEM = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/EM_ge.img";
+    test_pathSC1 = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/SC1_ge.img";
+    test_pathSC2 = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/SC2_ge.img";
+    test_useRaw = 1;
+    test_rawSize   = "128";
+    test_rawNum    = "120";
+    test_rawType   = "16-bit Unsigned";
+    test_rawEndian = "little-endian";
+
+    if (pathEM != test_pathEM){
+        print(file_num + ": test_parseInputFile: failed [pathEM]");
+        exit();
+    }
+    if (pathSC1 != test_pathSC1){
+        print(file_num + ": test_parseInputFile: failed [pathSC1]");
+        exit();
+    }
+    if (pathSC2 != test_pathSC2){
+        print(file_num + ": test_parseInputFile: failed [pathSC2]");
+        exit();
+    }
+    if (useFloat != test_useFloat){
+        print(file_num + ": test_parseInputFile: failed [useFloat]");
+        exit();
+    }
+    if (reportFileName != test_reportFileName){
+        print(file_num + ": test_parseInputFile: failed [reportFileName]");
+        exit();
+    }
+    if (scanName != test_scanName){
+        print(file_num + ": test_parseInputFile: failed [scanName]");
+        exit();
+    }
+    if (outputPath != test_outputPath){
+        print(file_num + ": test_parseInputFile: failed [outputPath]");
+        exit();
+    }
+    if (getWidths != test_getWidths){
+        print(file_num + ": test_parseInputFile: failed [getWidths]");
+        exit();
+    }
+    if (w_em != test_w_em){
+        print(file_num + ": test_parseInputFile: failed [test_w_em]");
+        exit();
+    }
+    if (p_em != test_p_em){
+        print(file_num + ": test_parseInputFile: failed [test_p_em]");
+        exit();
+    }
+    if (w_sc1 != test_w_sc1){
+        print(file_num + ": test_parseInputFile: failed [test_w_sc1]");
+        exit();
+    }
+    if (p_sc1 != test_p_sc1){
+        print(file_num + ": test_parseInputFile: failed [test_p_sc1]");
+        exit();
+    }
+    if (w_sc2 != test_w_sc2){
+        print(file_num + ": test_parseInputFile: failed [test_w_sc2]");
+        exit();
+    }
+    if (p_sc2 != test_p_sc2){
+        print(file_num + ": test_parseInputFile: failed [test_w_sc2]");
+        exit();
+    }
+    if (useRaw != test_useRaw){
+        print(file_num + ": test_parseInputFile: failed [test_useRaw]");
+        exit();
+    }
+    if(rawSize != test_rawSize){
+        print(file_num + ": test_parseInputFile: failed [test_rawSize]");
+        exit();
+    }
+    if(rawNum != test_rawNum){
+        print(file_num + ": test_parseInputFile: failed [test_rawNum]");
+        exit();
+    }
+    if(rawType != test_rawType){
+        print(file_num + ": test_parseInputFile: failed [test_rawType]");
+        exit();
+    }
+    if(rawEndian !=  test_rawEndian){
+        print(file_num + ": test_parseInputFile: failed [test_rawEndian");
+        exit();
+    }
+
+    print("test_parseInputFile: passed");  
+}
+
+function test_loadUserInterface(){
     // // Need to test that the UI has been opened after function is run
     // // - Do we want to get the input data as well or is that an ImageJ function?
     // // https://imagej.net/plugins/ij-robot

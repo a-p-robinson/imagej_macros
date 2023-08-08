@@ -1,0 +1,18 @@
+/var/home/apr/Science/imagej_macros/macros/TEW/test_data/EM_ge.img
+/var/home/apr/Science/imagej_macros/macros/TEW/test_data/SC1_ge.img
+/var/home/apr/Science/imagej_macros/macros/TEW/test_data/SC2_ge.img
+1
+test_input_dicom_header
+test_input_dicom_header
+/tmp/
+41.6
+208
+10.86
+181
+14.16
+236
+raw
+128
+120
+16-bit Unsigned
+little-endian
