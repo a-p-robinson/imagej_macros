@@ -928,6 +928,8 @@ function test_generateTEW(){
     //      - This will test if we have done all the slices
     // - Need to check this for a planar and a tomo image
 
+
+    // Tomographic data
     closeAllImages();
     useRaw = 0;
 
@@ -1016,6 +1018,99 @@ function test_generateTEW(){
         exit(); 
     }
     if(counts_em_tew_f[0] != (32*32*120*10000)*(2 - (3*scaleFac1) - (3*scaleFac2) + (1-scaleFac1) + (1-scaleFac2))){
+        print("test_generateTEW: failed [counts_em_tew_f]");
+        exit();
+    }
+
+    // Planar data
+    closeAllImages();
+    useRaw = 0;
+
+    // We have tested parseInputFile() so we will use that.
+    path = getInfo("macro.filepath");
+    macro_name_position = indexOf(path, "_run.ijm");
+    input_file = "inputfiles-tew/test_input_planar_dicom_header.txt";
+    input_file = substring(path,0,macro_name_position) + input_file;
+    parseInputFile(input_file);
+
+    // We have also tested loadTEW() so we can use that
+    loadTEW();
+
+    // Now we can test generateTEW()
+    generateTEW(emID, sc1ID, sc2ID);
+
+    // Check we have the expected windows
+    selectImage(sc1ContID);
+    if(getTitle() != "SC1_contribution"){
+        print("test_generateTEW: failed [SC1_contribution]");
+        exit();
+    }
+    selectImage(sc2ContID);
+    if(getTitle() != "SC2_contribution"){
+        print("test_generateTEW: failed [SC1_contribution]");
+        exit();
+    }
+    selectImage(tewID);
+    if(getTitle() != "TEW"){
+        print("test_generateTEW: failed [TEW]");
+        exit();
+    }
+    selectImage(em_tewID_f);
+    if(getTitle() != "EM-TEW_float"){
+        print("test_generateTEW: failed [EM-TEW_float]");
+        exit();
+    }
+    selectImage(em_tewID_nozero);
+    if(getTitle() != "EM-TEW_nozero"){
+        print("test_generateTEW: failed [EM-TEW_nozero]");
+        exit();
+    }
+    selectImage(em_tewID_unsigned);
+    if(getTitle() != "EM-TEW_unsigned"){
+        print("test_generateTEW: failed [EM-TEW_unsigned]");
+        exit();
+    }
+
+    // Check the scale factors
+    if (scaleFac1 != parseFloat(41.6/(2.0*10.86))){
+        print("test_generateTEW: failed [scaleFac1]");
+        exit();
+    }
+    if (scaleFac2 != parseFloat(41.6/(2.0*14.16))){
+        print("test_generateTEW: failed [scaleFac2]");
+        exit();
+    }
+
+    // Get the counts in each image and check that they are correct
+    // Need to have checked the function first
+    counts_sc1Cont = measureWholeImage(sc1ContID);
+    counts_sc2Cont = measureWholeImage(sc2ContID);
+    counts_tew = measureWholeImage(tewID);
+    counts_em_tew_f = measureWholeImage(em_tewID_f);
+    counts_em_tew_nozero = measureWholeImage(em_tewID_nozero);
+    counts_em_tew_unsigned = measureWholeImage(em_tewID_unsigned);
+    
+    if(counts_sc1Cont[0] != (128*128*10000*1*scaleFac1)){
+        print("test_generateTEW: failed [counts_sc1Cont]");
+        exit();
+    }
+    if(counts_sc2Cont[0] != parseFloat(128*128*10000*1*scaleFac2)){
+        print("test_generateTEW: failed [counts_sc2Cont] ");
+        exit();
+    }
+    if(counts_tew[0] != parseFloat(counts_sc1Cont[0]+counts_sc2Cont[0])){
+        print("test_generateTEW: failed [counts_tew]");
+        exit(); 
+    }
+    if(counts_em_tew_nozero[0] != (64*64*1*2*10000)){
+        print("test_generateTEW: failed [counts_em_tew_nozero]");
+        exit(); 
+    }
+    if(counts_em_tew_unsigned[0] != (64*64*1*2*10000)){
+        print("test_generateTEW: failed [counts_em_tew_unsigned]");
+        exit(); 
+    }
+    if(counts_em_tew_f[0] != (64*64*1*10000)*(2 - (3*scaleFac1) - (3*scaleFac2) + (1-scaleFac1) + (1-scaleFac2))){
         print("test_generateTEW: failed [counts_em_tew_f]");
         exit();
     }
