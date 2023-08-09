@@ -965,6 +965,48 @@ function test_analyseTEW(){
         }
     }
 
+    // Planar data
+    closeAllImages();
+    useRaw = 0;
+
+    // We have tested parseInputFile() so we will use that.
+    path = getInfo("macro.filepath");
+    macro_name_position = indexOf(path, "_run.ijm");
+    input_file = "inputfiles-tew/test_input_planar_dicom_header.txt";
+    input_file = substring(path,0,macro_name_position) + input_file;
+    parseInputFile(input_file);
+
+    // We have also tested loadTEW() and generateTEW() so we can use them
+    loadTEW();
+    generateTEW(emID, sc1ID, sc2ID);
+
+    // Analyse the TEW
+    analyseTEW("unit_test_report_planar");
+
+    // Now read in the produced file
+    str = File.openAsString("unit_test_report_planar_float.txt");
+    if (str.length == 0){
+        print("test_analyseTEW: failed [open file]");
+        exit();
+    }
+    new_lines = split(str, "\n");
+    
+    // Open the "correct" output
+    results_file = "test_data/analyseTEW_test_planar_output.txt";
+    results_file = substring(path,0,macro_name_position) + results_file;
+    str = File.openAsString(results_file);
+    old_lines = split(str, "\n");
+
+    // Check if the files agree (ignore date stamp)
+    for (i = 0; i < old_lines.length; i++){
+        if (i != 2){
+            if (new_lines[i] != old_lines[i]){
+                print("test_analyseTEW: failed [file mismatch line " + i+1 + "]");
+                exit();
+            }
+        }
+    }
+
     print("+++test_analyseTEW: passed+++");
 
 }
