@@ -503,7 +503,7 @@ function generateTEW(emID, sc1ID, sc2ID) {
 // - Takes name of scan and output path as parameters
 function writeTEWinter(scanName, outputPath) {
 
-    // Append delimiter to putput path (linux at least
+    // Append delimiter to putput path (linux at least)
     outputPath = outputPath + "/";
 
     print("\n** Writing interfiles to " + outputPath + scanName);
@@ -917,6 +917,63 @@ function closeAllImages() {
 
 //*********************************************************************************
 // Tests:
+
+function test_writeTEWinter(){
+    // Need to save the files and then open them again and do a diff?
+
+    // Tomographic data
+    closeAllImages();
+    useRaw = 0;
+
+    // We have tested parseInputFile() so we will use that.
+    path = getInfo("macro.filepath");
+    macro_name_position = indexOf(path, "_run.ijm");
+    input_file = "inputfiles-tew/test_input_dicom_header.txt";
+    input_file = substring(path,0,macro_name_position) + input_file;
+    parseInputFile(input_file);
+
+    // We have also tested loadTEW() and generateTEW() so we can use them
+    loadTEW();
+    generateTEW(emID, sc1ID, sc2ID);
+    writeTEWinter(scanName, outputPath);
+
+    // Now close all the images
+    closeAllImages();
+
+    // // Do the TEW again
+    loadTEW();
+    generateTEW(emID, sc1ID, sc2ID);
+
+    // Open the saved files
+    run("NucMed Open", "open=" + outputPath + scanName + "_EM-TEW.hdr");
+    rename("EM-TEW.hdr");
+    run("NucMed Open", "open=" + outputPath + scanName + "_TEW.hdr");
+    rename("TEW.hdr");
+
+    // Calculate the difference images
+    imageCalculator("Subtract create 32-bit stack", "TEW","TEW.hdr");
+    selectWindow("Result of TEW");
+    diff_tew_ID = getImageID();
+
+    imageCalculator("Subtract create 32-bit stack", "EM-TEW_unsigned","EM-TEW.hdr");
+    selectWindow("Result of EM-TEW_unsigned");
+    diff_em_tew_ID = getImageID();
+
+    // Get counts in diff
+    counts_diff_tew = measureWholeImage(diff_tew_ID);
+    counts_diff_em_tew = measureWholeImage(diff_em_tew_ID);
+    
+    if (counts_diff_tew[0] != 0){
+        print("test_writeTEWinter: failed [TEW]");
+        exit();
+    }
+    if (counts_diff_em_tew[0] != 0){
+        print("test_writeTEWinter: failed [EM-TEW]");
+        exit();
+    }
+
+    print("+++test_writeTEWinter: passed+++");
+}
 
 function test_analyseTEW(){
     // If we use a specific input file and have tested all the other units then we should get the same output file
