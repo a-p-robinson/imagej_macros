@@ -1151,7 +1151,7 @@ function test_loadTEW(){
         exit();
     }
 
-    // Check we have don'tfloats
+    // Check we have don't floats
     selectImage(emID);
     if(bitDepth() != 16){
         print("test_loadTEW: failed [EM not float - DICOM] ");
@@ -1212,6 +1212,113 @@ function test_loadTEW(){
         exit();
     }
     if (parseFloat(w_sc2) != 14.16){
+        print("test_loadTEW: failed [manualWidths - raw]");
+        exit();
+    }
+
+    // DICOM - Planar
+    useFloat = 1;
+    useRaw = 0;
+    getWidths = 1;
+    pathEM = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/Planar_EM_ge.dcm";
+    pathSC1 = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/Planar_SC1_ge.dcm";
+    pathSC2 = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/Planar_SC2_ge.dcm";
+
+    closeAllImages();
+    loadTEW();
+
+    // Check we have all 3 windows
+    selectImage(emID);
+    if(getTitle() != "EM"){
+        print("test_loadTEW: failed [EM - DICOM - Planar] ");
+        exit();
+    }
+    selectImage(sc1ID);
+    if(getTitle() != "SC1"){
+        print("test_loadTEW: failed [SC1 - DICOM - Planar] ");
+        exit();
+    }
+    selectImage(sc2ID);
+    if(getTitle() != "SC2"){
+        print("test_loadTEW: failed [SC2 - DICOM - Planar] ");
+        exit();
+    }
+    
+    // Check widths are set correctly
+    if (parseFloat(w_em) != 41.6){
+        print("test_loadTEW: failed [getWidths] ");
+        exit();
+    }
+    if (parseFloat(w_sc1) != 10.86){
+        print("test_loadTEW: failed [getWidths]");
+        exit();
+    }
+    if (parseFloat(w_sc2) != 14.16){
+        print("test_loadTEW: failed [getWidths]");
+        exit();
+    }
+
+    // Check we have floats
+    selectImage(emID);
+    if(bitDepth() != 32){
+        print("test_loadTEW: failed [EM float - DICOM - Planar] ");
+        exit();
+    }
+    selectImage(sc1ID);
+    if(bitDepth() != 32){
+        print("test_loadTEW: failed [SC1 float - DICOM - Planar] ");
+        exit();
+    }
+    selectImage(sc2ID);
+    if(bitDepth() != 32){
+        print("test_loadTEW: failed [SC2 float - DICOM - Planar] ");
+        exit();
+    }
+
+    // RAW - Planar
+    pathEM = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/Planar_EM_ge.img";
+    pathSC1 = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/Planar_SC1_ge.img";
+    pathSC2 = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/Planar_SC2_ge.img";
+    getWidths = 0;
+    w_em = 41.6;
+    w_sc1 = 10.86;
+    w_sc2 = 14.16;
+    useRaw = 1;
+    rawSize = "256";
+    rawNum = "1";
+    rawType = "16-bit Unsigned";
+    rawEndian = "little-endian";
+
+    closeAllImages();
+    loadTEW();
+
+    // Check we have all 3 windows
+    selectImage(emID);
+    if (getTitle() != "EM") {
+        print("test_loadTEW: failed [EM - RAW] ");
+        exit();
+    }
+    selectImage(sc1ID);
+    if (getTitle() != "SC1") {
+        print("test_loadTEW: failed [SC1 - RAW] ");
+        exit();
+    }
+    selectImage(sc2ID);
+    if (getTitle() != "SC2") {
+        print("test_loadTEW: failed [SC2 - RAW] ");
+        exit();
+    }
+
+    // Check widths are set correctly
+    if (parseFloat(w_em) != 41.6) {
+        print("test_loadTEW: failed [manualWidths - raw] ");
+        exit();
+    }
+    if (parseFloat(w_sc1) != 10.86) {
+        print("test_loadTEW: failed [manualWidths - raw]");
+        exit();
+    }
+    if (parseFloat(w_sc2) != 14.16) {
         print("test_loadTEW: failed [manualWidths - raw]");
         exit();
     }
@@ -1364,6 +1471,149 @@ function test_parseInputFile(){
     test_useRaw = 1;
     test_rawSize   = "128";
     test_rawNum    = "120";
+    test_rawType   = "16-bit Unsigned";
+    test_rawEndian = "little-endian";
+
+    if (pathEM != test_pathEM){
+        print(file_num + ": test_parseInputFile: failed [pathEM]");
+        exit();
+    }
+    if (pathSC1 != test_pathSC1){
+        print(file_num + ": test_parseInputFile: failed [pathSC1]");
+        exit();
+    }
+    if (pathSC2 != test_pathSC2){
+        print(file_num + ": test_parseInputFile: failed [pathSC2]");
+        exit();
+    }
+    if (useFloat != test_useFloat){
+        print(file_num + ": test_parseInputFile: failed [useFloat]");
+        exit();
+    }
+    if (reportFileName != test_reportFileName){
+        print(file_num + ": test_parseInputFile: failed [reportFileName]");
+        exit();
+    }
+    if (scanName != test_scanName){
+        print(file_num + ": test_parseInputFile: failed [scanName]");
+        exit();
+    }
+    if (outputPath != test_outputPath){
+        print(file_num + ": test_parseInputFile: failed [outputPath]");
+        exit();
+    }
+    if (getWidths != test_getWidths){
+        print(file_num + ": test_parseInputFile: failed [getWidths]");
+        exit();
+    }
+    if (w_em != test_w_em){
+        print(file_num + ": test_parseInputFile: failed [test_w_em]");
+        exit();
+    }
+    if (p_em != test_p_em){
+        print(file_num + ": test_parseInputFile: failed [test_p_em]");
+        exit();
+    }
+    if (w_sc1 != test_w_sc1){
+        print(file_num + ": test_parseInputFile: failed [test_w_sc1]");
+        exit();
+    }
+    if (p_sc1 != test_p_sc1){
+        print(file_num + ": test_parseInputFile: failed [test_p_sc1]");
+        exit();
+    }
+    if (w_sc2 != test_w_sc2){
+        print(file_num + ": test_parseInputFile: failed [test_w_sc2]");
+        exit();
+    }
+    if (p_sc2 != test_p_sc2){
+        print(file_num + ": test_parseInputFile: failed [test_w_sc2]");
+        exit();
+    }
+    if (useRaw != test_useRaw){
+        print(file_num + ": test_parseInputFile: failed [test_useRaw]");
+        exit();
+    }
+    if(rawSize != test_rawSize){
+        print(file_num + ": test_parseInputFile: failed [test_rawSize]");
+        exit();
+    }
+    if(rawNum != test_rawNum){
+        print(file_num + ": test_parseInputFile: failed [test_rawNum]");
+        exit();
+    }
+    if(rawType != test_rawType){
+        print(file_num + ": test_parseInputFile: failed [test_rawType]");
+        exit();
+    }
+    if(rawEndian !=  test_rawEndian){
+        print(file_num + ": test_parseInputFile: failed [test_rawEndian");
+        exit();
+    }
+
+    // Test file 4:
+    file_num = 4;
+    input_file = "inputfiles-tew/test_input_planar_dicom_header.txt";
+    input_file = substring(path,0,macro_name_position) + input_file;
+    parseInputFile(input_file);
+
+    // Check variables - Test File 1
+    test_pathEM = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/Planar_EM_ge.dcm";
+    test_pathSC1 = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/Planar_SC1_ge.dcm";
+    test_pathSC2 = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/Planar_SC2_ge.dcm";
+    test_useFloat = 1;
+    test_reportFileName = "test_input_planar_dicom_header";
+    test_scanName = "test_input_planar_dicom_header";
+    test_outputPath = "/tmp/";
+    test_getWidths = 1;
+
+    if (pathEM != test_pathEM){
+        print(file_num + ": test_parseInputFile: failed [pathEM]");
+        exit();
+    }
+    if (pathSC1 != test_pathSC1){
+        print(file_num + ": test_parseInputFile: failed [pathSC1]");
+        exit();
+    }
+    if (pathSC2 != test_pathSC2){
+        print(file_num + ": test_parseInputFile: failed [pathSC2]");
+        exit();
+    }
+    if (useFloat != test_useFloat){
+        print(file_num + ": test_parseInputFile: failed [useFloat]");
+        exit();
+    }
+    if (reportFileName != test_reportFileName){
+        print(file_num + ": test_parseInputFile: failed [reportFileName]");
+        exit();
+    }
+    if (scanName != test_scanName){
+        print(file_num + ": test_parseInputFile: failed [scanName]");
+        exit();
+    }
+    if (outputPath != test_outputPath){
+        print(file_num + ": test_parseInputFile: failed [outputPath]");
+        exit();
+    }
+    if (getWidths != test_getWidths){
+        print(file_num + ": test_parseInputFile: failed [getWidths]");
+        exit();
+    }
+
+    // Test file 5:
+    file_num = 5;
+    input_file = "inputfiles-tew/test_input_planar_raw.txt";
+    input_file = substring(path,0,macro_name_position) + input_file;
+    parseInputFile(input_file);
+
+    // Check variables - Test File 5
+    test_pathEM = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/Planar_EM_ge.img";
+    test_pathSC1 = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/Planar_SC1_ge.img";
+    test_pathSC2 = "/var/home/apr/Science/imagej_macros/macros/TEW/test_data/Planar_SC2_ge.img";
+    test_useRaw = 1;
+    test_getWidths = 0;
+    test_rawSize = "256";
+    test_rawNum    = "1";
     test_rawType   = "16-bit Unsigned";
     test_rawEndian = "little-endian";
 

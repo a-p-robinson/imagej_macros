@@ -1,0 +1,7 @@
+/var/home/apr/Science/imagej_macros/macros/TEW/test_data/Planar_EM_ge.dcm
+/var/home/apr/Science/imagej_macros/macros/TEW/test_data/Planar_SC1_ge.dcm
+/var/home/apr/Science/imagej_macros/macros/TEW/test_data/Planar_SC2_ge.dcm
+1
+test_input_planar_dicom_header
+test_input_planar_dicom_header
+/tmp/

@@ -1,0 +1,18 @@
+/var/home/apr/Science/imagej_macros/macros/TEW/test_data/Planar_EM_ge.img
+/var/home/apr/Science/imagej_macros/macros/TEW/test_data/Planar_SC1_ge.img
+/var/home/apr/Science/imagej_macros/macros/TEW/test_data/Planar_SC2_ge.img
+1
+test_input_planar_dicom_header
+test_input_planar_dicom_header
+/tmp/
+41.6
+208
+10.86
+181
+14.16
+236
+raw
+256
+1
+16-bit Unsigned
+little-endian
