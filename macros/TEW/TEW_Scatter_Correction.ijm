@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // *************************************************
-// * SPECT projection TEW/DEW scatter correction
+// * SPECT projection TEW scatter correction
 // * (based on Ogawa et al 1991)
 // *
 // * Generate TEW for all 177Lu data
@@ -10,13 +10,14 @@
 // *
 // * APR: 17/01/14 (v1)
 // * Revised: 22/08/19
+// * Revised: 09/08/23
 // *************************************************
 
 //---------------------------------------------------------------------------
 // Global Variables:
 
 // User options:
-var useFloat = 1;        // Use float or integer arthimetic
+var useFloat = 1;        // Use float or integer arithmetic
 var scanName;              // Name to use for interfile (and also report)
 var outputPath;            // Path to save Interfile to
 var reportFileName;        // Name of file to write report to
@@ -44,7 +45,7 @@ var sc1ID;                 // SC1 window
 var sc2ID;                 // SC2 window
 var sc1ContID;             // Contribution of SC1 to TEW correction
 var sc2ContID;             // Contribution of SC1 to TEW correction
-var tewID;                 // TEW corrcetion
+var tewID;                 // TEW correction
 var em_tewID_f;            // EM - TEW (floating point arithmetic)
 var em_tewID_nozero;       // EM - TEW (no non-zero pixels)
 var em_tewID_unsigned;     // EM - TEW (integer arithmetic)
@@ -57,10 +58,10 @@ var rawType;
 var rawEndian;
 
 // Debug:
-var DEBUG = 0;             // 0 = no info / 1 = show measuremnts / 2 = "full" debug statements
+var DEBUG = 0;             // 0 = no info / 1 = show measurements / 2 = "full" debug statements
 //---------------------------------------------------------------------------
 
-macro "TEW_DEW_Scatter_Correction" {
+macro "TEW_Scatter_Correction" {
 
 
 
@@ -395,7 +396,7 @@ function loadTEW() {
 //
 // Calculate the TEW correction and generate a report on it
 //
-// Takes imageIDs for EM, Sc1 and SC2 as arguments
+// Takes imageIDs for EM, SC1 and SC2 as arguments
 function generateTEW(emID, sc1ID, sc2ID) {
 
     print("\n** Generating TEW correction and corrected images");
@@ -499,7 +500,7 @@ function generateTEW(emID, sc1ID, sc2ID) {
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
-// Write the TEW correction and corrcected emission image out to file
+// Write the TEW correction and corrected emission image out to file
 // - Takes name of scan and output path as parameters
 function writeTEWinter(scanName, outputPath) {
 
@@ -1073,7 +1074,7 @@ function test_generateTEW(){
     // - Scale factors are set correctly
     // - That we have a window called TEW
     // - x3 scatter corrected images (EM-TEW_float, EM-TEW_nozero, EM-TEW_unsigned)
-    // - Also SC1_contribution and SC2_cointribution
+    // - Also SC1_contribution and SC2_contribution
     // - Also need to check that we have the right numbers in each image
     //      - This will test if we have done all the slices
     // - Need to check this for a planar and a tomo image

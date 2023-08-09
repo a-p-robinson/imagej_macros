@@ -1,7 +1,0 @@
-/home/apr/Analysis/Mediso_TEW/Data/208keV/Sensitivity/ST1/SE1/00000001.dcm
-/home/apr/Analysis/Mediso_TEW/Data/208keV/Sensitivity/ST1/SE1/00000002.dcm
-/home/apr/Analysis/Mediso_TEW/Data/208keV/Sensitivity/ST1/SE1/00000003.dcm
-1
-Sensitivity_TEW_208
-Sensitivity_TEW_208
-/home/apr/Development/MedisoDataAnalysis/imagej_macros/
