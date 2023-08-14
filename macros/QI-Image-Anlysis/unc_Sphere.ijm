@@ -2,9 +2,13 @@
 /* 
 Estimate the PDF of VOI defintions
 */
+
+var testPath = "/var/home/apr/Science/rois/"
+
 macro "unc_Sphere" {
 
-    cameras = newArray("DR", "Optima","CZT-WEHR","CZT-MEHRS");
+    // cameras = newArray("DR", "Optima","CZT-WEHR","CZT-MEHRS");
+    cameras = newArray("DR");
     args = newArray(3);
     args[1] = "Sphere1";
     args[2] = "NULL";
@@ -16,8 +20,8 @@ macro "unc_Sphere" {
 
         run_me(args);
 
-        closeAllWindows();
-        closeAllImages();
+        // closeAllWindows();
+        // closeAllImages();
 
     }
 
@@ -30,6 +34,9 @@ function run_me(args){
     cameraID = args[0];
     phantomID = args[1];
     roiID = args[2];
+
+    // Open the Nuc Med reconstructed image
+    openNMData(cameraID, phantomID);
 
     // Open the CT image
     openCTData(cameraID, phantomID); 
@@ -71,42 +78,67 @@ function run_me(args){
     zoom_factor = 2.0;
     radius_perc_unc = 0.33; //%
     seed = 2;
+    nRand = 100;
     random("seed",seed);
 
-    // Get a random value each centre
-    for (i = 0; i < sphereX.length; i++){
-        print("x,y[" + i + "] = " + sphereX[i] + " , " + sphereY[i] + " --> " + getRectangular(sphereX[i],pointerWidth(zoom_factor)) + " , " + getRectangular(sphereY[i],pointerWidth(zoom_factor)));
-
-        print("r[" + i + "] = " + radius[i] + " --> " + getGaussian(radius[i],radius_perc_unc/100.0*radius[i]));
-
-    }
-
-    exit();
-    
-
-
+    // Loop through each sphere
     for (i = 0; i < sphereX.length; i++){
 
         selectWindow("CT");
         
         print("Will generate sphere [CT]:");
-        print(i + " : " + sphereX[i] + " "+ sphereY[i] + " "+ sphereZ[i]);  
-        	
-        // Create the sphere ROI
-	    createSphere(sphereX[i],sphereY[i],sphereZ[i],radius[i]);
+        print(i + " : " + sphereX[i] + " "+ sphereY[i] + " "+ sphereZ[i] + " " + radius[i]);  
 
-        // Save the ROI set
-        //roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
-        roiManager("Save", roiDirectory + cameraID + "_" + phantomID + "_CT_Sphere_" + i+1 + "_RoiSet_XYZ.zip");
+        // Loop through the VOI perturbations
+        for (nr = 0; nr < nRand; nr++){
+            // Get the new positions
+            new_sphereX = getRectangular(sphereX[i],pointerWidth(zoom_factor));
+            new_sphereY = getRectangular(sphereY[i],pointerWidth(zoom_factor));
+            new_radius  = getGaussian(radius[i],radius_perc_unc/100.0*radius[i]);
+          
+            print(nr + " : " + new_sphereX + " " + new_sphereY + " " + sphereZ[i] + " " + new_radius);
+
+            // Create the sphere ROI
+            createSphere(sphereX[i],sphereY[i],sphereZ[i],radius[i]);
+
+            // Translate to a NM ROI
+            makeNucMedVOI();
+
+            // Save the ROI set
+            roiManager("Save", testPath + cameraID + "_" + phantomID + "_CT_Sphere_" + i+1 + "_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nr + ".zip");
+
+            // Translate to a NM ROI
+            makeNucMedVOI();
+
+            // Save the ROI set
+            roiManager("Save", testPath + cameraID + "_" + phantomID + "_CT_Sphere_" + i+1 + "_NM_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nr + ".zip");
+
+            // // Get some stats
+            // geometry = newArray(2);
+            // geometry = getVolumeArea();
+            // print("CT VOI volume : " + geometry[0] + " mm^3");
+            // print("CT VOI surface area : " + geometry[1] + " mm^2");
+
+            // Close ROIs
+	        roiManager("reset");
+
+        }
+
+        // // Create the sphere ROI
+	    // createSphere(sphereX[i],sphereY[i],sphereZ[i],radius[i]);
+
+        // // Save the ROI set
+        // //roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
+        // roiManager("Save", roiDirectory + cameraID + "_" + phantomID + "_CT_Sphere_" + i+1 + "_RoiSet_XYZ.zip");
         
-        // Get some stats
-        geometry = newArray(2);
-        geometry = getVolumeArea();
-        print("CT VOI volume : " + geometry[0] + " mm^3");
-        print("CT VOI surface area : " + geometry[1] + " mm^2");
+        // // Get some stats
+        // geometry = newArray(2);
+        // geometry = getVolumeArea();
+        // print("CT VOI volume : " + geometry[0] + " mm^3");
+        // print("CT VOI surface area : " + geometry[1] + " mm^2");
 
-        // Close ROIs
-	    roiManager("reset");
+        // // Close ROIs
+	    // roiManager("reset");
     }
 
 }
@@ -135,4 +167,20 @@ function pointerWidth(zoom){
     size_p = 6;
     
     return (size_p / zoom);
+  }
+
+function makeNucMedVOI(){
+    // Function to reproduce `macros/QI-Image-Anlysis/makeNucMedROI-Spheres.ijm`
+
+    selectWindow("NM");
+
+    // Calculate the alignment of CT and NM in voxels
+    delta = calcNMCTalignmentXY("NM", "CT");
+    scale = calcNMCTscale("NM", "CT");
+    Array.print(delta);
+
+    // Translate the ROIs from CT to NM in X and Y voxels
+    selectWindow("CT");
+    translateROImanagerdXdY(delta[0], delta[1]);
+
   }

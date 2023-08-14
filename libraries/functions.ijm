@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
 // ***********************************************************************
 // * Common library of ImageJ macro functions
 // * 
@@ -7,6 +6,12 @@
 // 
 // * Revised APR: 01/08/22
 // ***********************************************************************
+
+// **********************
+// * Global Variables
+// **********************
+var DICOM_DATA_PATH = "/home/apr/Science/GE-RSCH/QI/data/DicomData/";
+var roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis-clean/image-analysis/rois/";
 
 // Parse the passed arguments and get the dataset to open
 function parseArguments(){
@@ -52,82 +57,82 @@ function parseArguments(){
 function openCTData(cameraID, phantomID){
 
     if (cameraID == "DR" && phantomID == "Cylinder"){
-        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/DR/Cylinder/CT/CTSoftTissue1.25mmSPECTCT_H_1001_CT001.dcm";
+        CTfile = DICOM_DATA_PATH + "/DR/Cylinder/CT/CTSoftTissue1.25mmSPECTCT_H_1001_CT001.dcm";
         CTslices = 321;
     }
 
     if (cameraID == "CZT-WEHR" && phantomID == "Cylinder"){
-        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/WEHR/Cylinder/CT/CTAC5mmCYLINDER_H_1001_CT001.dcm";
+        CTfile = DICOM_DATA_PATH + "/CZT/WEHR/Cylinder/CT/CTAC5mmCYLINDER_H_1001_CT001.dcm";
         CTslices = 80;
     }
 
     if (cameraID == "CZT-MEHRS" && phantomID == "Cylinder"){
-        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/MEHRS/Cylinder/CT/CTAC5mmCYLINDER_H_1001_CT001.dcm";
+        CTfile = DICOM_DATA_PATH + "/CZT/MEHRS/Cylinder/CT/CTAC5mmCYLINDER_H_1001_CT001.dcm";
         CTslices = 80;
     }
 
     if (cameraID == "Optima" && phantomID == "Cylinder"){
-        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/Optima/Cylinder/CT/CTSPECT-CT_H_1001_CT001.dcm";
+        CTfile = DICOM_DATA_PATH + "/Optima/Cylinder/CT/CTSPECT-CT_H_1001_CT001.dcm";
         CTslices = 161;
     }
 
     if (cameraID == "DR" && phantomID == "Sphere1"){
-        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/DR/Sphere1/CT/CTSoftTissue1.25mmSPECTCT_H_1001_CT001.dcm";
+        CTfile = DICOM_DATA_PATH + "/DR/Sphere1/CT/CTSoftTissue1.25mmSPECTCT_H_1001_CT001.dcm";
         CTslices = 321;
     }
 
     if (cameraID == "Optima" && phantomID == "Sphere1"){
-        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/Optima/Sphere1/CT/CTSPECT-CT_H_1001_CT001.dcm";
+        CTfile = DICOM_DATA_PATH + "/Optima/Sphere1/CT/CTSPECT-CT_H_1001_CT001.dcm";
         CTslices = 161;
     }
 
     if (cameraID == "CZT-WEHR" && phantomID == "Sphere1"){
-        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/WEHR/Sphere1/CT/CTAC5mmSPHERES1_H_1001_CT001.dcm";
+        CTfile = DICOM_DATA_PATH + "/CZT/WEHR/Sphere1/CT/CTAC5mmSPHERES1_H_1001_CT001.dcm";
         CTslices = 80;
     }
 
     if (cameraID == "CZT-MEHRS" && phantomID == "Sphere1"){
-        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/MEHRS/Sphere1/CT/CTAC5mmSPHERES1_H_1001_CT001.dcm";
+        CTfile = DICOM_DATA_PATH + "/CZT/MEHRS/Sphere1/CT/CTAC5mmSPHERES1_H_1001_CT001.dcm";
         CTslices = 80;
     }
 
     if (cameraID == "DR" && phantomID == "Sphere2"){
-        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/DR/Sphere2/CT/CTSoftTissue1.25mmSPECTCT_H_1001_CT001.dcm";
+        CTfile = DICOM_DATA_PATH + "/DR/Sphere2/CT/CTSoftTissue1.25mmSPECTCT_H_1001_CT001.dcm";
         CTslices = 321;
     }
 
     if (cameraID == "Optima" && phantomID == "Sphere2"){
-        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/Optima/Sphere2/CT/CTSPECT-CT_H_1001_CT001.dcm";
+        CTfile = DICOM_DATA_PATH + "/Optima/Sphere2/CT/CTSPECT-CT_H_1001_CT001.dcm";
         CTslices = 161;
     }
 
     if (cameraID == "CZT-WEHR" && phantomID == "Sphere2"){
-        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/WEHR/Sphere2/CT/CTAC5mmSPHERES2_H_1001_CT001.dcm";
+        CTfile = DICOM_DATA_PATH + "/CZT/WEHR/Sphere2/CT/CTAC5mmSPHERES2_H_1001_CT001.dcm";
         CTslices = 80;
     }
 
     if (cameraID == "CZT-MEHRS" && phantomID == "Sphere2"){
-        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/MEHRS/Sphere2/CT/CTAC5mmSPHERES1_H_1001_CT001.dcm";
+        CTfile = DICOM_DATA_PATH + "/CZT/MEHRS/Sphere2/CT/CTAC5mmSPHERES1_H_1001_CT001.dcm";
         CTslices = 80;
     }
 
     if (cameraID == "DR" && phantomID == "2-Organ"){
-        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/DR/2-Organ/CT/CTSoftTissue1.25mmSPECTCT_H_1001_CT001.dcm";
+        CTfile = DICOM_DATA_PATH + "/DR/2-Organ/CT/CTSoftTissue1.25mmSPECTCT_H_1001_CT001.dcm";
         CTslices = 321;
     }
 
     if (cameraID == "Optima" && phantomID == "2-Organ"){
-        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/Optima/2-Organ/CT/CTSPECT-CT_H_1001_CT001.dcm";
+        CTfile = DICOM_DATA_PATH + "/Optima/2-Organ/CT/CTSPECT-CT_H_1001_CT001.dcm";
         CTslices = 161;
     }
 
     if (cameraID == "CZT-WEHR" && phantomID == "2-Organ"){
-        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/WEHR/2-Organ/CT/CTAC5mmTomoLu-177_H_1001_CT001.dcm";
+        CTfile = DICOM_DATA_PATH + "/CZT/WEHR/2-Organ/CT/CTAC5mmTomoLu-177_H_1001_CT001.dcm";
         CTslices = 80;
     }
 
     if (cameraID == "CZT-MEHRS" && phantomID == "2-Organ"){
-        CTfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/WEHR/2-Organ/CT/CTAC5mmTWOORGANMEHRS_H_1001_CT001.dcm";
+        CTfile = DICOM_DATA_PATH + "/CZT/WEHR/2-Organ/CT/CTAC5mmTWOORGANMEHRS_H_1001_CT001.dcm";
         CTslices = 80;
     }
 
@@ -138,7 +143,7 @@ function openCTData(cameraID, phantomID){
 // Open the ROI set
 function openROI(cameraID, phantomID, roiID){
 
-    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/"+cameraID+ "_" + phantomID + roiID + "_RoiSet_XYZ.zip";
+    roiFile = roiDirectory+cameraID+ "_" + phantomID + roiID + "_RoiSet_XYZ.zip";
     roiManager("Open",roiFile);
     roiManager("Sort");
 
@@ -147,7 +152,7 @@ function openROI(cameraID, phantomID, roiID){
 // Open the Sphere Centres
 function openCTsphereCentres(cameraID, phantomID){
 
-    roiFile = "/home/apr/Science/GE-RSCH/QI/analysis/rois/centres/"+cameraID+ "_" + phantomID + "_CT_Centres_RoiSet.zip";
+    roiFile =roiDirectory + "centres/"+cameraID+ "_" + phantomID + "_CT_Centres_RoiSet.zip";
     roiManager("Open",roiFile);
 
 }
@@ -156,68 +161,68 @@ function openCTsphereCentres(cameraID, phantomID){
 function openNMData(cameraID, phantomID){
 
     if (cameraID == "DR" && phantomID == "Cylinder"){
-        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/DR/Cylinder/Recon/SPECTCT_EM2_IRAC001_DS.dcm";
+        NMfile = DICOM_DATA_PATH + "DR/Cylinder/Recon/SPECTCT_EM2_IRAC001_DS.dcm";
     }
 
     if (cameraID == "CZT-WEHR" && phantomID == "Cylinder"){
-        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/WEHR/Cylinder/Recon/CYLINDER_EM2_IRAC001_DS.dcm";
+        NMfile = DICOM_DATA_PATH + "CZT/WEHR/Cylinder/Recon/CYLINDER_EM2_IRAC001_DS.dcm";
     }
 
     if (cameraID == "CZT-MEHRS" && phantomID == "Cylinder"){
-        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/MEHRS/Cylinder/Recon/CYLINDER_EM2_IRAC001_DS.dcm";
+        NMfile = DICOM_DATA_PATH + "CZT/MEHRS/Cylinder/Recon/CYLINDER_EM2_IRAC001_DS.dcm";
     }
 
     if (cameraID == "Optima" && phantomID == "Cylinder"){
-        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/Optima/Cylinder/Recon/SPECT-CT_EM2_IRAC001_DS.dcm";      
+        NMfile = DICOM_DATA_PATH + "Optima/Cylinder/Recon/SPECT-CT_EM2_IRAC001_DS.dcm";      
     }
 
     if (cameraID == "DR" && phantomID == "Sphere1"){
-        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/DR/Sphere1/Recon/SPECTCT_EM2_IRAC001_DS.dcm";
+        NMfile = DICOM_DATA_PATH + "DR/Sphere1/Recon/SPECTCT_EM2_IRAC001_DS.dcm";
     }
 
     if (cameraID == "CZT-WEHR" && phantomID == "Sphere1"){
-        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/WEHR/Sphere1/Recon/SPHERES1_EM2_IRAC001_DS.dcm";
+        NMfile = DICOM_DATA_PATH + "CZT/WEHR/Sphere1/Recon/SPHERES1_EM2_IRAC001_DS.dcm";
     }
 
     if (cameraID == "CZT-MEHRS" && phantomID == "Sphere1"){
-        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/MEHRS/Sphere1/Recon/SPHERES1MEHRS_EM2_IRAC001_DS.dcm";
+        NMfile = DICOM_DATA_PATH + "CZT/MEHRS/Sphere1/Recon/SPHERES1MEHRS_EM2_IRAC001_DS.dcm";
     }
 
     if (cameraID == "Optima" && phantomID == "Sphere1"){
-        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/Optima/Sphere1/Recon/SPECT-CT_EM2_IRAC001_DS.dcm";      
+        NMfile = DICOM_DATA_PATH + "Optima/Sphere1/Recon/SPECT-CT_EM2_IRAC001_DS.dcm";      
     }
 
     if (cameraID == "DR" && phantomID == "Sphere2"){
-        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/DR/Sphere2/Recon/SPHERES2_EM2_IRAC001_DS.dcm";
+        NMfile = DICOM_DATA_PATH + "DR/Sphere2/Recon/SPHERES2_EM2_IRAC001_DS.dcm";
     }
 
     if (cameraID == "Optima" && phantomID == "Sphere2"){
-        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/Optima/Sphere2/Recon/SPECT-CT_EM2_IRAC001_DS.dcm";      
+        NMfile = DICOM_DATA_PATH + "Optima/Sphere2/Recon/SPECT-CT_EM2_IRAC001_DS.dcm";      
     }
 
     if (cameraID == "CZT-WEHR" && phantomID == "Sphere2"){
-        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/WEHR/Sphere2/Recon/SPHERES2_EM2_IRAC001_DS.dcm";
+        NMfile = DICOM_DATA_PATH + "CZT/WEHR/Sphere2/Recon/SPHERES2_EM2_IRAC001_DS.dcm";
     }
 
     if (cameraID == "CZT-MEHRS" && phantomID == "Sphere2"){
-        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/MEHRS/Sphere2/Recon/SPHERES2MEHRS_EM2_IRAC001_DS.dcm";
+        NMfile = DICOM_DATA_PATH + "CZT/MEHRS/Sphere2/Recon/SPHERES2MEHRS_EM2_IRAC001_DS.dcm";
     }
 
 
     if (cameraID == "DR" && phantomID == "2-Organ"){
-        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/DR/2-Organ/Recon/SPECTCT_EM2_IRAC001_DS.dcm";
+        NMfile = DICOM_DATA_PATH + "DR/2-Organ/Recon/SPECTCT_EM2_IRAC001_DS.dcm";
     }
 
     if (cameraID == "Optima" && phantomID == "2-Organ"){
-        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/Optima/2-Organ/Recon/SPECT-CT_EM2_IRAC001_DS.dcm";      
+        NMfile = DICOM_DATA_PATH + "Optima/2-Organ/Recon/SPECT-CT_EM2_IRAC001_DS.dcm";      
     }
 
     if (cameraID == "CZT-WEHR" && phantomID == "2-Organ"){
-        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/WEHR/2-Organ/Recon/TomoLu-177_EM2_IRAC001_DS.dcm";
+        NMfile = DICOM_DATA_PATH + "CZT/WEHR/2-Organ/Recon/TomoLu-177_EM2_IRAC001_DS.dcm";
     }
 
     if (cameraID == "CZT-MEHRS" && phantomID == "2-Organ"){
-        NMfile = "/home/apr/Science/GE-RSCH/QI/data/DicomData/CZT/MEHRS/2-Organ/Recon/TWOORGANMEHRS_EM2_IRAC001_DS.dcm";
+        NMfile = DICOM_DATA_PATH + "CZT/MEHRS/2-Organ/Recon/TWOORGANMEHRS_EM2_IRAC001_DS.dcm";
     }
 
     open(NMfile);
@@ -795,3 +800,28 @@ function getSegmentRadius(r,h){
     
 }
 //------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+// Close all open windows with out saving
+//
+function closeAllWindows(){
+    list = getList("window.titles"); 
+    for (i=0; i<list.length; i++){ 
+	winame = list[i]; 
+     	selectWindow(winame); 
+	run("Close"); 
+    } 
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+// Close all open images without saving
+//
+function closeAllImages(){
+    while (nImages>0) { 
+        selectImage(nImages); 
+        close(); 
+    } 
+}
+//---------------------------------------------------------------------------
