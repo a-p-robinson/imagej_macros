@@ -1,316 +1,141 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /* 
-Define a cylindrical ROI based on the centre of the phantom using CT
+Estimate the PDF of VOI defintions
 */
+macro "unc_Sphere" {
 
-macro "voi" {
-
-    
+    cameras = newArray("DR", "Optima","CZT-WEHR","CZT-MEHRS");
     args = newArray(3);
-    args[0] = "DR";
     args[1] = "Sphere1";
-    args[2] = "_CT";
+    args[2] = "NULL";
     
-    run_me(args);
+    // Loop through all the cameras
+    for (c = 0; c < cameras.length; c++){
+
+        args[0] = cameras[c];
+
+        run_me(args);
+
+        closeAllWindows();
+        closeAllImages();
+
+    }
+
 
 }
 
 function run_me(args){
-
+    // // Get the data names from arguments
+    // args = parseArguments();    
     cameraID = args[0];
     phantomID = args[1];
     roiID = args[2];
 
-    // Make a random image for testing
-    //newImage("Test", "16-bit noise", 512, 512, 321);
-
-    newImage("Test", "16-bit noise", 128, 128, 120);
-
-    // // Make a rectangle
-    // makeRectangle(0, 0, 3, 3);
-    // run("Measure");
-
-    // makeRectangle(0, 0, 1, 1);
-    // run("Measure");
-    // Roi.getContainedPoints(xpoints, ypoints);
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // print (" ");
-
-    // makeOval(0, 0, 1, 1);
-    // run("Measure");
-    // Roi.getContainedPoints(xpoints, ypoints);
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // print (" ");
-
-    // makeRectangle(0, 0, 2, 2);
-    // run("Measure");
-    // Roi.getContainedPoints(xpoints, ypoints);
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // print (" ");
-
-    // makeOval(0, 0, 2, 2);
-    // run("Measure");
-    // Roi.getContainedPoints(xpoints, ypoints);
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // print (" ");
-
-    // makeRectangle(0, 0, 3, 3);
-    // run("Measure");
-    // Roi.getContainedPoints(xpoints, ypoints);
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // print (" ");
-
-    // makeOval(0, 0, 3, 3);
-    // run("Measure");
-    // Roi.getContainedPoints(xpoints, ypoints);
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // print (" ");
-
-    // makeRectangle(0, 0, 4, 4);
-    // run("Measure");
-    // Roi.getContainedPoints(xpoints, ypoints);
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // print (" ");
-
-    // makeOval(0, 0, 4, 4);
-    // run("Measure");
-    // Roi.getContainedPoints(xpoints, ypoints);
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // print (" ");
-
-    // makeRectangle(0, 0, 5, 5);
-    // run("Measure");
-    // Roi.getContainedPoints(xpoints, ypoints);
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // print (" ");
-
-    // makeOval(0, 0, 5, 5);
-    // run("Measure");
-    // Roi.getContainedPoints(xpoints, ypoints);
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // print (" ");
-
-    // makeRectangle(0, 0, 6, 6);
-    // run("Measure");
-    // Roi.getContainedPoints(xpoints, ypoints);
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // print (" ");
-
-    // makeOval(0, 0, 6.1, 6.0);
-    // run("Measure");
-    // Roi.getContainedPoints(xpoints, ypoints);
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // print (" ");
-
-    // makeRectangle(0, 0, 3, 3);
-    // run("Measure");
-    // Roi.getContainedPoints(xpoints, ypoints);
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // print (" ");
-
-    // makeRectangle(0.00001, 0.00001, 3, 3);
-    // run("Measure");
-    // Roi.getContainedPoints(xpoints, ypoints);
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // print (" ");
-
-    // makeRectangle(0.999999, 0.999999, 3, 3);
-    // run("Measure");
-    // Roi.getContainedPoints(xpoints, ypoints);
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // print (" ");
-
-    // makeRectangle(0.00001, 0.00001, 3.00001, 3.00001);
-    // run("Measure");
-    // Roi.getContainedPoints(xpoints, ypoints);
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // print (" ");
-
-
-    // // Make Oval
-    // makeOval(0, 0, 3, 3);
-    // run("Measure");
-    // Roi.getContainedPoints(xpoints, ypoints);
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // print (" ");
-
-    // makeOval(0, 0, 3.0000001, 3.00000001);
-    // run("Measure");
-    // Roi.getContainedPoints(xpoints, ypoints);
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // print (" ");
-
-    // makeOval(1, 1, 3, 3);
-    // run("Measure");
-    // Roi.getContainedPoints(xpoints, ypoints);
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // print (" ");
-
-    // makeOval(1.5, 1.5, 3, 3);
-    // run("Measure");
-    // Roi.getContainedPoints(xpoints, ypoints);
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // print (" ");
-
-
-    // makeOval(1.5, 1.5, 3.000001, 3.000001);
-    // run("Measure");
-    // Roi.getContainedPoints(xpoints, ypoints);
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // print (" ");
-
-    // // Make Oval
-    // makeOval(0, 0, 3.1, 3.1);
-    // run("Measure");
-    
-    // // Make Oval
-    // makeOval(0, 0, 3.5, 3.5);
-    // run("Measure");
-
-    // // Make Oval
-    // makeOval(0, 0, 3.7, 3.7);
-    // run("Measure");
-
-    // // Make Oval
-    // makeOval(0, 0, 4.0, 4.0);
-    // run("Measure");
-    // Roi.getContainedPoints(xpoints, ypoints);
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // print (" ");
-    
-
-    // // Make a rectangle
-    // makeRectangle(0, 0, 2, 2);
-    // Roi.getContainedPoints(xpoints, ypoints)
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // print (" ");
-    // run("Measure");
-
-    // makeRectangle(2, 2, 2, 2);
-    // Roi.getContainedPoints(xpoints, ypoints)
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // run("Measure");
-
-    // print (" ");
-
-    // makeRectangle(1.9, 1.9, 2, 2);
-    // Roi.getContainedPoints(xpoints, ypoints)
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // run("Measure");
-    // print (" ");
-    
-    // makeRectangle(2.1, 2.1, 2, 2);
-    // Roi.getContainedPoints(xpoints, ypoints)
-    // for(i = 0; i < xpoints.length; i++){
-    //     print("["+i+"] "+ xpoints[i] + ", " + ypoints[i]);
-    // }
-    // run("Measure");
-
-
     // Open the CT image
-    // cameraID = "DR";
-    // phantomID = "Cylinder";
     openCTData(cameraID, phantomID); 
-    roiManager("Open", "/var/home/apr/Science/GE-RSCH/QI/analysis/rois/centres/DR_Sphere1_CT_Centres_RoiSet.zip");
-    roiManager("select", 0);
 
-    // Get the position
-    getSelectionCoordinates(x, y);
-    print(x[0] + " , " +y[0]);
+    // Open the Sphere Centres
+    openCTsphereCentres(cameraID, phantomID);
+
+    // Loop through the centres
+    selectWindow("CT");
+    count = roiManager("count");
+    sphereX = newArray(count);
+    sphereY = newArray(count);
+    sphereZ = newArray(count);
+
+    for (i = 0; i < count; i++) {
+        roiManager("select", i);
+
+        // Get the position
+        getSelectionCoordinates(x, y);
+        sphereX[i] = x[0];
+        sphereY[i] = y[0];
+        sphereZ[i] = getSliceNumber();
+    }
+
+    // Get rid of the centres from roiManager now
+    roiManager("reset");
+    
+    // Create the sphere ROIS
+    radius = newArray(9.9/2.0, 12.4/2.0, 15.6/2.0, 19.7/2.0, 24.8/2.0, 31.3/2.0);
+    
+    // At his point we have read the centres in and cleared the ROI manager.
+    // We have also defined the "correct" radi
+
+    Array.print(sphereX);
+    Array.print(sphereY);
+    Array.print(sphereZ);
+    Array.print(radius);
+
+    zoom_factor = 2.0;
+    radius_perc_unc = 0.33; //%
+    seed = 2;
+    random("seed",seed);
+
+    // Get a random value each centre
+    for (i = 0; i < sphereX.length; i++){
+        print("x,y[" + i + "] = " + sphereX[i] + " , " + sphereY[i] + " --> " + getRectangular(sphereX[i],pointerWidth(zoom_factor)) + " , " + getRectangular(sphereY[i],pointerWidth(zoom_factor)));
+
+        print("r[" + i + "] = " + radius[i] + " --> " + getGaussian(radius[i],radius_perc_unc/100.0*radius[i]));
+
+    }
+
+    exit();
+    
 
 
-    // // Find the centre in Z
-    // selectWindow("CT");
-    // centreCT = newArray(3);
-    // centreCT[2] = centreSliceCT();
+    for (i = 0; i < sphereX.length; i++){
 
-    // // Find centre in x and y
-    // setSlice(centreCT[2]);
+        selectWindow("CT");
+        
+        print("Will generate sphere [CT]:");
+        print(i + " : " + sphereX[i] + " "+ sphereY[i] + " "+ sphereZ[i]);  
+        	
+        // Create the sphere ROI
+	    createSphere(sphereX[i],sphereY[i],sphereZ[i],radius[i]);
 
-    // getDimensions(width, height, channels, slices, frames);
-    // makeRectangle(0, 0, width, height);
-    // ct_x = getProfile();
+        // Save the ROI set
+        //roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
+        roiManager("Save", roiDirectory + cameraID + "_" + phantomID + "_CT_Sphere_" + i+1 + "_RoiSet_XYZ.zip");
+        
+        // Get some stats
+        geometry = newArray(2);
+        geometry = getVolumeArea();
+        print("CT VOI volume : " + geometry[0] + " mm^3");
+        print("CT VOI surface area : " + geometry[1] + " mm^2");
 
-    // selectWindow("CT");
-    // setKeyDown("alt"); ct_y = getProfile();
+        // Close ROIs
+	    roiManager("reset");
+    }
 
-    // threshold = -1200;
-    // centreCT[0] = centreProfile(ct_x, threshold);
-    // threshold = -700;
-    // centreCT[1] = centreProfile(ct_y, threshold);
+}
 
-    // Array.print(centreCT);
+function getRectangular(value, uncertainty){
+    // Return a random value for the value based on a rectangular distribution
+    // - value = value to perturb
+    // - uncertainty = absolute uncertainty
 
-    // // Make ROIS
-    // // 	Cylinder inside diameter: 21.6 cm * 130 % = 28.08 cm
-    // // 	Cylinder inside height: 18.6 cm * 120 % = 22.32 cm
-    // phantomRadius = 216 * 1.3 / 2.0;
-    // phantomHeight = 186 * 1.2;
-    // //phantomRadius = 216  / 2.0;
-    // //phantomHeight = 186;
+    return value + (((2.0*random())-1.0) * uncertainty);
 
-    // selectWindow("CT");
-    // run("Select None");
-    // roiManager("reset");
+}
 
-    // createCylinder(centreCT[0], centreCT[1], centreCT[2], phantomRadius, phantomHeight);
+function getGaussian(value, uncertainty){
+    // Return a random value for the value based on a Gaussian distribution
+    // - value = value to perturb (mean)
+    // - uncertainty = absolute uncertainty (SD)
+    
+    return uncertainty*random("gaussian") + value;
 
-    // // Save the ROI dataset
-    // //roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
-    // // roiManager("Save", roiDirectory + cameraID + "_" + phantomID + roiID + "_RoiSet_XYZ.zip");
+}
 
-
-} 
+function pointerWidth(zoom){
+    // Return the width covered by the pointer in pixels
+    
+    size_p = 6;
+    
+    return (size_p / zoom);
+  } 
 // SPDX-License-Identifier: GPL-3.0-or-later
 // ***********************************************************************
 // * Common library of ImageJ macro functions
