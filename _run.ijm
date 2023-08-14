@@ -1,189 +1,154 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /* 
-Estimate the PDF of VOI defintions
+    Get the value of a measurand using a PDF for a VOI
 */
 
+var DATA_DIR = "/home/apr/Science/GE-RSCH/QI/data/Reconstruction/QI_01_09_22/";
+var RESULTS_DIR = "/home/apr/Science/GE-RSCH/QI/analysis-clean/image-analysis/results/";
 var testPath = "/var/home/apr/Science/rois/"
 
-macro "unc_Sphere" {
+macro "loop_all_data_unc" {
 
-    // cameras = newArray("DR", "Optima","CZT-WEHR","CZT-MEHRS");
-    cameras = newArray("DR");
-    args = newArray(3);
-    args[1] = "Sphere1";
-    args[2] = "NULL";
-    
-    // Loop through all the cameras
-    for (c = 0; c < cameras.length; c++){
+    cameraID = "DR";
+    windowName = "EM2";
+    // phantoms = newArray("Cylinder","Sphere1","Sphere2","2-Organ");
+    phantoms = newArray(1);
+    phantoms[0] = "Sphere1"
 
-        args[0] = cameras[c];
+    //corrections = newArray("NC","AC","ACSC");
+    corrections = newArray(1);
+    corrections[0] = "AC";
 
-        run_me(args);
+    //itt = newArray(1,2,3,4,5,10,20,30,40,50);
+    itt = newArray(1);
+    itt[0] = 30;
 
-        // closeAllWindows();
-        // closeAllImages();
+    // Use an array for the output so we can get statistics
+    // - Array.getStatistics(array, min, max, mean, stdDev)
+    // - Or we coudl use Table.getColumn()?
 
-    }
+    // Create output tables
+    // Make a Table for output
+    table_name = "Whole Image";
+    Table.create(table_name);
+    ii = 0;
+      
+    table_name = "VOI";
+    Table.create(table_name);
+    jj= 0;
 
+    // Loop through all the phantoms
+    for (p = 0; p < phantoms.length; p++){
 
-}
+        phantomID = phantoms[p];
 
-function run_me(args){
-    // // Get the data names from arguments
-    // args = parseArguments();    
-    cameraID = args[0];
-    phantomID = args[1];
-    roiID = args[2];
-
-    // Open the Nuc Med reconstructed image
-    openNMData(cameraID, phantomID);
-
-    // Open the CT image
-    openCTData(cameraID, phantomID); 
-
-    // Open the Sphere Centres
-    openCTsphereCentres(cameraID, phantomID);
-
-    // Loop through the centres
-    selectWindow("CT");
-    count = roiManager("count");
-    sphereX = newArray(count);
-    sphereY = newArray(count);
-    sphereZ = newArray(count);
-
-    for (i = 0; i < count; i++) {
-        roiManager("select", i);
-
-        // Get the position
-        getSelectionCoordinates(x, y);
-        sphereX[i] = x[0];
-        sphereY[i] = y[0];
-        sphereZ[i] = getSliceNumber();
-    }
-
-    // Get rid of the centres from roiManager now
-    roiManager("reset");
-    
-    // Create the sphere ROIS
-    radius = newArray(9.9/2.0, 12.4/2.0, 15.6/2.0, 19.7/2.0, 24.8/2.0, 31.3/2.0);
-    
-    // At his point we have read the centres in and cleared the ROI manager.
-    // We have also defined the "correct" radi
-
-    Array.print(sphereX);
-    Array.print(sphereY);
-    Array.print(sphereZ);
-    Array.print(radius);
-
-    zoom_factor = 2.0;
-    radius_perc_unc = 0.33; //%
-    seed = 2;
-    nRand = 100;
-    random("seed",seed);
-
-    // Loop through each sphere
-    for (i = 0; i < sphereX.length; i++){
-
-        selectWindow("CT");
-        
-        print("Will generate sphere [CT]:");
-        print(i + " : " + sphereX[i] + " "+ sphereY[i] + " "+ sphereZ[i] + " " + radius[i]);  
-
-        // Loop through the VOI perturbations
-        for (nr = 0; nr < nRand; nr++){
-            // Get the new positions
-            new_sphereX = getRectangular(sphereX[i],pointerWidth(zoom_factor));
-            new_sphereY = getRectangular(sphereY[i],pointerWidth(zoom_factor));
-            new_radius  = getGaussian(radius[i],radius_perc_unc/100.0*radius[i]);
-          
-            print(nr + " : " + new_sphereX + " " + new_sphereY + " " + sphereZ[i] + " " + new_radius);
-
-            // Create the sphere ROI
-            createSphere(sphereX[i],sphereY[i],sphereZ[i],radius[i]);
-
-            // Translate to a NM ROI
-            makeNucMedVOI();
-
-            // Save the ROI set
-            roiManager("Save", testPath + cameraID + "_" + phantomID + "_CT_Sphere_" + i+1 + "_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nr + ".zip");
-
-            // Translate to a NM ROI
-            makeNucMedVOI();
-
-            // Save the ROI set
-            roiManager("Save", testPath + cameraID + "_" + phantomID + "_CT_Sphere_" + i+1 + "_NM_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nr + ".zip");
-
-            // // Get some stats
-            // geometry = newArray(2);
-            // geometry = getVolumeArea();
-            // print("CT VOI volume : " + geometry[0] + " mm^3");
-            // print("CT VOI surface area : " + geometry[1] + " mm^2");
-
-            // Close ROIs
-	        roiManager("reset");
-
+        // Define what VOIs go with that phantom
+        if (phantomID == "Cylinder"){
+            rois = newArray("_CT_NM");
         }
-
-        // // Create the sphere ROI
-	    // createSphere(sphereX[i],sphereY[i],sphereZ[i],radius[i]);
-
-        // // Save the ROI set
-        // //roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
-        // roiManager("Save", roiDirectory + cameraID + "_" + phantomID + "_CT_Sphere_" + i+1 + "_RoiSet_XYZ.zip");
         
-        // // Get some stats
-        // geometry = newArray(2);
-        // geometry = getVolumeArea();
-        // print("CT VOI volume : " + geometry[0] + " mm^3");
-        // print("CT VOI surface area : " + geometry[1] + " mm^2");
+        if (phantomID == "Sphere1"){
+            rois = newArray("_CT_Sphere_1_NM","_CT_Sphere_2_NM","_CT_Sphere_3_NM","_CT_Sphere_4_NM","_CT_Sphere_5_NM","_CT_Sphere_6_NM");
+        }
+        
+        if (phantomID == "Sphere2"){
+            rois = newArray("_CT_NM");
+        }
+        
+        if (phantomID == "2-Organ"){
+            rois = newArray("_CT_spleen_NM","_CT_cortex_NM","_CT_medulla_NM");
+        }
+        
+        // Loop through corrections                                  
+        for (c = 0; c < corrections.length; c++){
+            
+            // Loop through reconstruction itterations
+            for (i = 0; i < itt.length; i++){
 
-        // // Close ROIs
-	    // roiManager("reset");
+                print(phantoms[p] + ":" + corrections[c] + ":" + itt[i]);
+
+                // Open the Nuc Med file
+                fileName = DATA_DIR+cameraID+"/"+phantomID+"/" + windowName + "/SS5_IT" + itt[i] + "/SPECTCT_"+windowName+"_IR"+corrections[c]+"001_DS.dcm";
+                open(fileName);
+                rename(itt[i]);
+                run("Fire");
+              
+                // Get total counts for that image
+                counts = sumStack();
+
+                // Save results to table
+                selectWindow("Whole Image");
+                Table.set("Camera", ii, cameraID);
+                Table.set("Energy", ii, windowName);
+                Table.set("Phantom", ii, phantoms[p]);
+                Table.set("Correction", ii, corrections[c]);
+                Table.set("Iterations", ii, itt[i]);
+                Table.set("Total Counts", ii, counts);
+                ii++;
+                
+                // Loop through rois
+                // We have a lot of ROIS to go through now.....!
+
+                zoom_factor = 2.0;
+                seed = 2;
+                nRand = 100;
+
+                for (r = 0; r < rois.length; r++){
+            
+                    // Loop through the VOI perturbations
+                    for (nr = 0; nr < nRand; nr++){
+                    // for (nr = 0; nr < 3; nr++) {
+                        // Construct the file name
+                        roiFile = testPath + cameraID+ "_" + phantomID + rois[r] + "_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nr + ".zip";
+                        print(roiFile);
+                        
+                        // Open the ROI
+                        roiManager("Open",roiFile);
+                        roiManager("Sort");
+
+                        // Get counts in VOI for each iteration image
+                        selectWindow(itt[i]);
+                        voiCounts = countsROImanager();
+                        geometry = newArray(2);
+                        geometry = getVolumeArea();
+
+                        // Close VOI
+                        roiManager("reset")
+
+                        // Save results to table
+                        selectWindow("VOI");
+                        Table.set("Camera", jj, cameraID);
+                        Table.set("Energy", jj, windowName);
+                        Table.set("Phantom", jj, phantoms[p]);
+                        Table.set("Correction", jj, corrections[c]);
+                        Table.set("Iterations", jj, itt[i]);
+                        Table.set("nr", jj, nr);
+                        Table.set("VOI", jj, rois[r]);
+                        Table.set("VOI Counts", jj, voiCounts);
+                        Table.set("VOI Volume (mm^3)",jj, d2s(geometry[0],2));
+                        Table.set("VOI Surface Area (mm^2)",jj, d2s(geometry[1],2));
+                        jj++;
+                        
+                    }
+
+                }
+
+                // Close Image
+                close(itt[i]);
+    
+            }
+        }                           
     }
-
-}
-
-function getRectangular(value, uncertainty){
-    // Return a random value for the value based on a rectangular distribution
-    // - value = value to perturb
-    // - uncertainty = absolute uncertainty
-
-    return value + (((2.0*random())-1.0) * uncertainty);
-
-}
-
-function getGaussian(value, uncertainty){
-    // Return a random value for the value based on a Gaussian distribution
-    // - value = value to perturb (mean)
-    // - uncertainty = absolute uncertainty (SD)
     
-    return uncertainty*random("gaussian") + value;
+    // // Save Tables
+    // selectWindow("VOI");
+    // Table.update;
+    // Table.save(RESULTS_DIR + cameraID + "_" + windowName + "_VOIstats.csv"); 
+    // selectWindow("Whole Image");
+    // Table.update;
+    // Table.save(RESULTS_DIR + cameraID + "_" + windowName + "_WholeImagestats.csv"); 
 
-}
-
-function pointerWidth(zoom){
-    // Return the width covered by the pointer in pixels
-    
-    size_p = 6;
-    
-    return (size_p / zoom);
-  }
-
-function makeNucMedVOI(){
-    // Function to reproduce `macros/QI-Image-Anlysis/makeNucMedROI-Spheres.ijm`
-
-    selectWindow("NM");
-
-    // Calculate the alignment of CT and NM in voxels
-    delta = calcNMCTalignmentXY("NM", "CT");
-    scale = calcNMCTscale("NM", "CT");
-    Array.print(delta);
-
-    // Translate the ROIs from CT to NM in X and Y voxels
-    selectWindow("CT");
-    translateROImanagerdXdY(delta[0], delta[1]);
-
-  } 
+} 
 // ***********************************************************************
 // * Common library of ImageJ macro functions
 // * 
@@ -701,7 +666,7 @@ function ctToNMROImanagerZ(NMname, CTname){
         //     nmSlice = nmSlicesMax-1;
         // }
 
-        // print("[" + i +"] CT Slice: " + ctSlice + " ---> NM Slice: " + nmSlice + " (" + round(nmSlice) + ")" );
+        print("[" + i +"] CT Slice: " + ctSlice + " ---> NM Slice: " + nmSlice + " (" + round(nmSlice) + ")" );
 
         selectWindow("NM");
         moveROIslice(round(nmSlice));
@@ -774,6 +739,7 @@ function ctToNMROImanagerZ(NMname, CTname){
         }
     }
 
+        print("CTtoNM Finished");
     
 }
 //------------------------------------------------------------------

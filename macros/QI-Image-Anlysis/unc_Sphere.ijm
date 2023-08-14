@@ -96,16 +96,18 @@ function run_me(args){
             new_sphereY = getRectangular(sphereY[i],pointerWidth(zoom_factor));
             new_radius  = getGaussian(radius[i],radius_perc_unc/100.0*radius[i]);
           
+            print("***Number: " + nr + "****");
             print(nr + " : " + new_sphereX + " " + new_sphereY + " " + sphereZ[i] + " " + new_radius);
 
             // Create the sphere ROI
+            selectWindow("CT");
             createSphere(sphereX[i],sphereY[i],sphereZ[i],radius[i]);
-
-            // Translate to a NM ROI
-            makeNucMedVOI();
-
+            roiManager("Sort");
+            
             // Save the ROI set
             roiManager("Save", testPath + cameraID + "_" + phantomID + "_CT_Sphere_" + i+1 + "_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nr + ".zip");
+
+            print("CTotoNM....");
 
             // Translate to a NM ROI
             makeNucMedVOI();
@@ -182,5 +184,12 @@ function makeNucMedVOI(){
     // Translate the ROIs from CT to NM in X and Y voxels
     selectWindow("CT");
     translateROImanagerdXdY(delta[0], delta[1]);
+
+    // Scale the ROIS to NM on CT (most accrate)
+    selectWindow("CT");
+    scaleROImanager(scale[0]);
+
+    // Translate the ROIs from CT to NM in Z
+    ctToNMROImanagerZ("NM", "CT");
 
   }

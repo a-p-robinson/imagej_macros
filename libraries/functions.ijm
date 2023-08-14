@@ -515,7 +515,7 @@ function ctToNMROImanagerZ(NMname, CTname){
         //     nmSlice = nmSlicesMax-1;
         // }
 
-        // print("[" + i +"] CT Slice: " + ctSlice + " ---> NM Slice: " + nmSlice + " (" + round(nmSlice) + ")" );
+        print("[" + i +"] CT Slice: " + ctSlice + " ---> NM Slice: " + nmSlice + " (" + round(nmSlice) + ")" );
 
         selectWindow("NM");
         moveROIslice(round(nmSlice));
@@ -588,6 +588,7 @@ function ctToNMROImanagerZ(NMname, CTname){
         }
     }
 
+        print("CTtoNM Finished");
     
 }
 //------------------------------------------------------------------
