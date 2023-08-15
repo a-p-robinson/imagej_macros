@@ -515,7 +515,7 @@ function ctToNMROImanagerZ(NMname, CTname){
         //     nmSlice = nmSlicesMax-1;
         // }
 
-        print("[" + i +"] CT Slice: " + ctSlice + " ---> NM Slice: " + nmSlice + " (" + round(nmSlice) + ")" );
+        //print("[" + i +"] CT Slice: " + ctSlice + " ---> NM Slice: " + nmSlice + " (" + round(nmSlice) + ")" );
 
         selectWindow("NM");
         moveROIslice(round(nmSlice));
@@ -526,7 +526,7 @@ function ctToNMROImanagerZ(NMname, CTname){
     currentSlice = -99;
     if (count > 1){
     
-        print("will process " + count + " rois");
+        //print("will process " + count + " rois");
 
         //Keep track of how many ROIS we merged
         nMerged = 0;
@@ -534,12 +534,12 @@ function ctToNMROImanagerZ(NMname, CTname){
             
             roiManager("select", i);
             thisSlice = getSliceNumber();
-            print("i="+i+ " slice = " + thisSlice);
+            //print("i="+i+ " slice = " + thisSlice);
             if (i == 0){
                 currentSlice = thisSlice;
                 mergeArray = newArray(1);
                 mergeArray[0] = 0;
-                print("FIRST set: " + currentSlice);
+                //print("FIRST set: " + currentSlice);
             }
             else{            
                 if (thisSlice == currentSlice){
@@ -548,9 +548,9 @@ function ctToNMROImanagerZ(NMname, CTname){
                 }
                 if ((thisSlice > currentSlice) || (thisSlice < currentSlice) || (i == count-1)){
                     // Merge the array and set current slice
-                    print(thisSlice + " < or > " + currentSlice);
-                    print("Will merge ROIs:");
-                    Array.print(mergeArray);
+                    //print(thisSlice + " < or > " + currentSlice);
+                    //print("Will merge ROIs:");
+                    //Array.print(mergeArray);
                 
                     currentSlice = thisSlice;
                 
@@ -559,16 +559,16 @@ function ctToNMROImanagerZ(NMname, CTname){
                         roiManager("select", mergeArray);
                         roiManager("Or");
                         roiManager("Add");
-                        print("MERGED");
+                        //print("MERGED");
                         nMerged = nMerged + mergeArray.length;
-                        print("nMERGED = "+ nMerged);
+                        //print("nMERGED = "+ nMerged);
                     }
                     else{
                         // We may have a single ROI on a  slice in which we don't need to merge
                         roiManager("select", mergeArray);
                         roiManager("Add");
                         nMerged = nMerged + mergeArray.length;
-                        print("nMERGED = "+ nMerged);
+                        //print("nMERGED = "+ nMerged);
                     }
                     // Reset array
                     mergeArray = newArray(1);
@@ -577,18 +577,16 @@ function ctToNMROImanagerZ(NMname, CTname){
             }
         }
 
-        print("Need to delete "+ nMerged);
+        //print("Need to delete "+ nMerged);
 
         // Delete the original ROIS (can I do this in one loop?)
         for (i = 0; i < nMerged; i++) { 
             roiManager("deselect");
-            print("Deleting " + i);
+            //print("Deleting " + i);
             roiManager("select", 0);
             roiManager("delete");   
         }
     }
-
-        print("CTtoNM Finished");
     
 }
 //------------------------------------------------------------------

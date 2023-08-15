@@ -3,7 +3,14 @@
 Estimate the PDF of VOI defintions
 */
 
-var testPath = "/var/home/apr/Science/rois/big_u/"
+// --- Variables ----
+var savePath = "/var/home/apr/Science/rois/x1000/"
+var zoom_factor = 2.0; // ImageJ zoom factor used to define the centres
+var radius_perc_unc = 0.33; // Sphere radius percentage uncertainty%
+var nRand = 1000; // Number of random perturbation of VOI
+var seed = 2; // Random number seed
+var doRadiusUnc = 1;
+var doPositionUnc = 1;
 
 macro "unc_Sphere" {
 
@@ -20,15 +27,25 @@ macro "unc_Sphere" {
 
         run_me(args);
 
-        // closeAllWindows();
-        // closeAllImages();
+        closeAllWindows();
+        closeAllImages();
 
     }
-
-
 }
 
 function run_me(args){
+    
+    print("savePath = " + savePath);
+    print("zoom_factor = " + zoom_factor);
+    print("radius_perc_unc = " + radius_perc_unc);
+    print("nRand = " + nRand);
+    print("seed = " + seed);
+    print("doRadiusUnc = " + doRadiusUnc);
+    print("doPositionUnc = " + doPositionUnc);
+
+    // Seed the random generator
+    random("seed",seed);
+
     // // Get the data names from arguments
     // args = parseArguments();    
     cameraID = args[0];
@@ -75,12 +92,6 @@ function run_me(args){
     Array.print(sphereZ);
     Array.print(radius);
 
-    zoom_factor = 0.1;
-    radius_perc_unc = 0.33; //%
-    seed = 2;
-    nRand = 100;
-    random("seed",seed);
-
     // Loop through each sphere
     for (i = 0; i < sphereX.length; i++){
 
@@ -92,12 +103,22 @@ function run_me(args){
         // Loop through the VOI perturbations
         for (nr = 0; nr < nRand; nr++){
             // Get the new positions
-            new_sphereX = getRectangular(sphereX[i],pointerWidth(zoom_factor)/2.0);
-            new_sphereY = getRectangular(sphereY[i],pointerWidth(zoom_factor)/2.0);
-            new_radius  = getGaussian(radius[i],radius_perc_unc/100.0*radius[i]);
-          
-            print("***Number: " + nr + "****");
-            print(nr + " : " + new_sphereX + " " + new_sphereY + " " + sphereZ[i] + " " + new_radius);
+            if(doPositionUnc == 1){
+                new_sphereX = getRectangular(sphereX[i],pointerWidth(zoom_factor)/2.0);
+                new_sphereY = getRectangular(sphereY[i],pointerWidth(zoom_factor)/2.0);
+            }
+            else{
+                new_sphereX = sphereX[i];
+                new_sphereY = sphereY[i];
+            }
+            if(doRadiusUnc == 1){
+                new_radius  = getGaussian(radius[i],radius_perc_unc/100.0*radius[i]);  
+            }
+            else{
+                new_radius  = radius[i];
+            }
+
+            print("[*] " + nr + " : " + new_sphereX + " " + new_sphereY + " " + sphereZ[i] + " " + new_radius);
 
             // Create the sphere ROI
             selectWindow("CT");
@@ -105,7 +126,7 @@ function run_me(args){
             roiManager("Sort");
 
             // Save the ROI set
-            roiManager("Save", testPath + cameraID + "_" + phantomID + "_CT_Sphere_" + i+1 + "_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nr + ".zip");
+            roiManager("Save", savePath + cameraID + "_" + phantomID + "_CT_Sphere_" + i+1 + "_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nr + ".zip");
 
             print("CTotoNM....");
 
@@ -113,7 +134,7 @@ function run_me(args){
             makeNucMedVOI();
 
             // Save the ROI set
-            roiManager("Save", testPath + cameraID + "_" + phantomID + "_CT_Sphere_" + i+1 + "_NM_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nr + ".zip");
+            roiManager("Save", savePath + cameraID + "_" + phantomID + "_CT_Sphere_" + i+1 + "_NM_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nr + ".zip");
 
             // // Get some stats
             // geometry = newArray(2);
@@ -126,25 +147,10 @@ function run_me(args){
 
             // Save window
             selectWindow("Log");
-            saveAs("Text",testPath+"uncertainties.log"); 
+            saveAs("Text",savePath+"uncertainties.log"); 
 
         }
 
-        // // Create the sphere ROI
-	    // createSphere(sphereX[i],sphereY[i],sphereZ[i],radius[i]);
-
-        // // Save the ROI set
-        // //roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
-        // roiManager("Save", roiDirectory + cameraID + "_" + phantomID + "_CT_Sphere_" + i+1 + "_RoiSet_XYZ.zip");
-        
-        // // Get some stats
-        // geometry = newArray(2);
-        // geometry = getVolumeArea();
-        // print("CT VOI volume : " + geometry[0] + " mm^3");
-        // print("CT VOI surface area : " + geometry[1] + " mm^2");
-
-        // // Close ROIs
-	    // roiManager("reset");
     }
 
 }
@@ -183,7 +189,7 @@ function makeNucMedVOI(){
     // Calculate the alignment of CT and NM in voxels
     delta = calcNMCTalignmentXY("NM", "CT");
     scale = calcNMCTscale("NM", "CT");
-    Array.print(delta);
+    //Array.print(delta);
 
     // Translate the ROIs from CT to NM in X and Y voxels
     selectWindow("CT");
