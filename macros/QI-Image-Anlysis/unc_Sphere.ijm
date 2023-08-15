@@ -3,7 +3,7 @@
 Estimate the PDF of VOI defintions
 */
 
-var testPath = "/var/home/apr/Science/rois/"
+var testPath = "/var/home/apr/Science/rois/big_u/"
 
 macro "unc_Sphere" {
 
@@ -75,7 +75,7 @@ function run_me(args){
     Array.print(sphereZ);
     Array.print(radius);
 
-    zoom_factor = 2.0;
+    zoom_factor = 0.1;
     radius_perc_unc = 0.33; //%
     seed = 2;
     nRand = 100;
@@ -92,8 +92,8 @@ function run_me(args){
         // Loop through the VOI perturbations
         for (nr = 0; nr < nRand; nr++){
             // Get the new positions
-            new_sphereX = getRectangular(sphereX[i],pointerWidth(zoom_factor));
-            new_sphereY = getRectangular(sphereY[i],pointerWidth(zoom_factor));
+            new_sphereX = getRectangular(sphereX[i],pointerWidth(zoom_factor)/2.0);
+            new_sphereY = getRectangular(sphereY[i],pointerWidth(zoom_factor)/2.0);
             new_radius  = getGaussian(radius[i],radius_perc_unc/100.0*radius[i]);
           
             print("***Number: " + nr + "****");
@@ -101,9 +101,9 @@ function run_me(args){
 
             // Create the sphere ROI
             selectWindow("CT");
-            createSphere(sphereX[i],sphereY[i],sphereZ[i],radius[i]);
+            createSphere(new_sphereX,new_sphereY,sphereZ[i],new_radius);
             roiManager("Sort");
-            
+
             // Save the ROI set
             roiManager("Save", testPath + cameraID + "_" + phantomID + "_CT_Sphere_" + i+1 + "_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nr + ".zip");
 
@@ -123,6 +123,10 @@ function run_me(args){
 
             // Close ROIs
 	        roiManager("reset");
+
+            // Save window
+            selectWindow("Log");
+            saveAs("Text",testPath+"uncertainties.log"); 
 
         }
 

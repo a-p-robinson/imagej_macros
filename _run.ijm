@@ -37,6 +37,11 @@ macro "loop_all_data_unc" {
     Table.create(table_name);
     jj= 0;
 
+    table_name = "Uncertainties";
+    Table.create(table_name);
+    jj= 0;
+    kk=0;
+
     // Loop through all the phantoms
     for (p = 0; p < phantoms.length; p++){
 
@@ -95,9 +100,23 @@ macro "loop_all_data_unc" {
 
                 for (r = 0; r < rois.length; r++){
             
+                    // Get the "true" measurand value
+                    // Open the ROI
+                    openROI(cameraID,phantoms[p],rois[r]);
+                    selectWindow(itt[i]);
+                    m_voiCounts = countsROImanager();
+                    m_geometry = newArray(2);
+                    m_geometry = getVolumeArea();
+                    roiManager("reset")
+
+                    // Array to store the PDF
+                    pdf_voiCounts = newArray(nRand);
+                    pdf_area = newArray(nRand);
+                    pdf_volume = newArray(nRand);
+
                     // Loop through the VOI perturbations
                     for (nr = 0; nr < nRand; nr++){
-                    // for (nr = 0; nr < 3; nr++) {
+
                         // Construct the file name
                         roiFile = testPath + cameraID+ "_" + phantomID + rois[r] + "_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nr + ".zip";
                         print(roiFile);
@@ -115,6 +134,11 @@ macro "loop_all_data_unc" {
                         // Close VOI
                         roiManager("reset")
 
+                        // Save the results to an array
+                        pdf_voiCounts[nr] = voiCounts;
+                        pdf_volume[nr] = geometry[0];
+                        pdf_area[nr] = geometry[1];
+                        
                         // Save results to table
                         selectWindow("VOI");
                         Table.set("Camera", jj, cameraID);
@@ -122,7 +146,7 @@ macro "loop_all_data_unc" {
                         Table.set("Phantom", jj, phantoms[p]);
                         Table.set("Correction", jj, corrections[c]);
                         Table.set("Iterations", jj, itt[i]);
-                        Table.set("nr", jj, nr);
+                        Table.set("nr", jj, nr);                        
                         Table.set("VOI", jj, rois[r]);
                         Table.set("VOI Counts", jj, voiCounts);
                         Table.set("VOI Volume (mm^3)",jj, d2s(geometry[0],2));
@@ -131,22 +155,60 @@ macro "loop_all_data_unc" {
                         
                     }
 
-                }
+                    // Get the uncertainty for the VOI
+                    Array.getStatistics(pdf_voiCounts, min_voiCounts, max_voiCounts, mean_voiCounts, stdDev_voiCounts);
+                    Array.getStatistics(pdf_volume, min_volume, max_volume, mean_volume, stdDev_volume);
+                    Array.getStatistics(pdf_area, min_area, max_area, mean_area, stdDev_area);
+
+                    selectWindow("Uncertainties");
+                    Table.set("Camera", kk, cameraID);
+                    Table.set("Energy", kk, windowName);
+                    Table.set("Phantom", kk, phantoms[p]);
+                    Table.set("Correction", kk, corrections[c]);
+                    Table.set("Iterations", kk, itt[i]);
+                    Table.set("Iterations", kk, itt[i]);
+                    Table.set("VOI", kk, rois[r]);
+                    Table.set("nRand", kk, nRand);                        
+                    
+                    Table.set("Counts", kk, m_voiCounts);
+                    Table.set("Mean(counts)", kk, mean_voiCounts);
+                    Table.set("StdDev(counts)", kk, stdDev_voiCounts);
+                    Table.set("u(counts) [%]", kk, 100.0*(stdDev_voiCounts/mean_voiCounts));
+                    
+                    Table.set("VOI Volume (mm^3)", kk, m_geometry[0]);
+                    Table.set("Mean(volume)", kk, mean_volume);
+                    Table.set("StdDev(volume)", kk, stdDev_volume);
+                    Table.set("u(volume) [%]", kk, 100.0*(stdDev_volume/mean_volume));
+
+                    Table.set("VOI Surface Area (mm^2)", kk, m_geometry[1]);
+                    Table.set("Mean(area)", kk, mean_area);
+                    Table.set("StdDev(area)", kk, stdDev_area);
+                    Table.set("u(area) [%]", kk, 100.0*(stdDev_area/mean_area));
+
+                    kk++;
+
+                } // ROI loop
 
                 // Close Image
                 close(itt[i]);
     
+
+
             }
         }                           
     }
     
-    // // Save Tables
-    // selectWindow("VOI");
-    // Table.update;
-    // Table.save(RESULTS_DIR + cameraID + "_" + windowName + "_VOIstats.csv"); 
-    // selectWindow("Whole Image");
-    // Table.update;
-    // Table.save(RESULTS_DIR + cameraID + "_" + windowName + "_WholeImagestats.csv"); 
+    // Save Tables
+    selectWindow("VOI");
+    Table.update;
+    Table.save(testPath + cameraID + "_" + windowName + "_VOIstats.csv"); 
+    selectWindow("Uncertainties");
+    Table.update;
+    Table.save(testPath + cameraID + "_" + windowName + "_VOIuncertainties.csv"); 
+    selectWindow("Whole Image");
+    Table.update;
+    Table.save(testPath + cameraID + "_" + windowName + "_WholeImagestats.csv"); 
+
 
 } 
 // ***********************************************************************
