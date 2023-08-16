@@ -1,24 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /* 
-Estimate the PDF of VOI defintions
+Define a cylindrical ROI based on the centre of the phantom using CT
 */
 
-// --- Variables ----
-var savePath = "/var/home/apr/Science/rois/x100_noP/"
-var zoom_factor = 2.0; // ImageJ zoom factor used to define the centres
-var radius_perc_unc = 0.33; // Sphere radius percentage uncertainty%
-var nRand = 100; // Number of random perturbation of VOI
-var seed = 2; // Random number seed
-var doRadiusUnc = 1;
-var doPositionUnc = 0;
+macro "cylinderROI" {
 
-macro "unc_Sphere" {
-
-    // cameras = newArray("DR", "Optima","CZT-WEHR","CZT-MEHRS");
-    cameras = newArray("DR");
+    cameras = newArray("DR", "Optima","CZT-WEHR","CZT-MEHRS");
     args = newArray(3);
-    args[1] = "Sphere1";
-    args[2] = "NULL";
+    args[1] = "Cylinder";
+    args[2] = "_CT";
     
     // Loop through all the cameras
     for (c = 0; c < cameras.length; c++){
@@ -31,178 +21,68 @@ macro "unc_Sphere" {
         closeAllImages();
 
     }
+
 }
 
 function run_me(args){
-    
-    print("savePath = " + savePath);
-    print("zoom_factor = " + zoom_factor);
-    print("radius_perc_unc = " + radius_perc_unc);
-    print("nRand = " + nRand);
-    print("seed = " + seed);
-    print("doRadiusUnc = " + doRadiusUnc);
-    print("doPositionUnc = " + doPositionUnc);
 
-    // Seed the random generator
-    random("seed",seed);
-
-    // // Get the data names from arguments
-    // args = parseArguments();    
     cameraID = args[0];
     phantomID = args[1];
     roiID = args[2];
 
-    // Open the Nuc Med reconstructed image
-    openNMData(cameraID, phantomID);
 
     // Open the CT image
+    // cameraID = "DR";
+    // phantomID = "Cylinder";
     openCTData(cameraID, phantomID); 
 
-    // Open the Sphere Centres
-    openCTsphereCentres(cameraID, phantomID);
-
-    // Loop through the centres
+    // Find the centre in Z
     selectWindow("CT");
-    count = roiManager("count");
-    sphereX = newArray(count);
-    sphereY = newArray(count);
-    sphereZ = newArray(count);
+    centreCT = newArray(3);
+    centreCT[2] = centreSliceCT();
 
-    for (i = 0; i < count; i++) {
-        roiManager("select", i);
+    // Find centre in x and y
+    selectWindow("CT");
+    setSlice(centreCT[2]);
 
-        // Get the position
-        getSelectionCoordinates(x, y);
-        sphereX[i] = x[0];
-        sphereY[i] = y[0];
-        sphereZ[i] = getSliceNumber();
-    }
+    getDimensions(width, height, channels, slices, frames);
+    makeRectangle(0, 0, width, height);
+    ct_x = getProfile();
+    //run("Plot Profile");
 
-    // Get rid of the centres from roiManager now
+    //exit();
+    selectWindow("CT");
+    //makeRectangle(0, 0, width, height);
+    setKeyDown("alt"); ct_y = getProfile();
+    //run("Plot Profile");
+
+    threshold = -1200;
+    centreCT[0] = centreProfile(ct_x, threshold);
+    threshold = -700;
+    centreCT[1] = centreProfile(ct_y, threshold);
+
+    Array.print(centreCT);
+
+    // Make ROIS
+    // 	Cylinder inside diameter: 21.6 cm * 130 % = 28.08 cm
+    // 	Cylinder inside height: 18.6 cm * 120 % = 22.32 cm
+    phantomRadius = 216 * 1.3 / 2.0;
+    phantomHeight = 186 * 1.2;
+    //phantomRadius = 216  / 2.0;
+    //phantomHeight = 186;
+
+    selectWindow("CT");
+    run("Select None");
     roiManager("reset");
-    
-    // Create the sphere ROIS
-    radius = newArray(9.9/2.0, 12.4/2.0, 15.6/2.0, 19.7/2.0, 24.8/2.0, 31.3/2.0);
-    
-    // At his point we have read the centres in and cleared the ROI manager.
-    // We have also defined the "correct" radi
 
-    Array.print(sphereX);
-    Array.print(sphereY);
-    Array.print(sphereZ);
-    Array.print(radius);
+    createCylinder(centreCT[0], centreCT[1], centreCT[2], phantomRadius, phantomHeight);
 
-    // Loop through each sphere
-    for (i = 0; i < sphereX.length; i++){
+    // Save the ROI dataset
+    //roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
+    roiManager("Save", roiDirectory + cameraID + "_" + phantomID + roiID + "_RoiSet_XYZ.zip");
 
-        selectWindow("CT");
-        
-        print("Will generate sphere [CT]:");
-        print(i + " : " + sphereX[i] + " "+ sphereY[i] + " "+ sphereZ[i] + " " + radius[i]);  
 
-        // Loop through the VOI perturbations
-        for (nr = 0; nr < nRand; nr++){
-            // Get the new positions
-            if(doPositionUnc == 1){
-                new_sphereX = getRectangular(sphereX[i],pointerWidth(zoom_factor)/2.0);
-                new_sphereY = getRectangular(sphereY[i],pointerWidth(zoom_factor)/2.0);
-            }
-            else{
-                new_sphereX = sphereX[i];
-                new_sphereY = sphereY[i];
-            }
-            if(doRadiusUnc == 1){
-                new_radius  = getGaussian(radius[i],radius_perc_unc/100.0*radius[i]);  
-            }
-            else{
-                new_radius  = radius[i];
-            }
-
-            print("[*] " + nr + " : " + new_sphereX + " " + new_sphereY + " " + sphereZ[i] + " " + new_radius);
-
-            // Create the sphere ROI
-            selectWindow("CT");
-            createSphere(new_sphereX,new_sphereY,sphereZ[i],new_radius);
-            roiManager("Sort");
-
-            // Save the ROI set
-            roiManager("Save", savePath + cameraID + "_" + phantomID + "_CT_Sphere_" + i+1 + "_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nr + ".zip");
-
-            print("CTotoNM....");
-
-            // Translate to a NM ROI
-            makeNucMedVOI();
-
-            // Save the ROI set
-            roiManager("Save", savePath + cameraID + "_" + phantomID + "_CT_Sphere_" + i+1 + "_NM_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nr + ".zip");
-
-            // // Get some stats
-            // geometry = newArray(2);
-            // geometry = getVolumeArea();
-            // print("CT VOI volume : " + geometry[0] + " mm^3");
-            // print("CT VOI surface area : " + geometry[1] + " mm^2");
-
-            // Close ROIs
-	        roiManager("reset");
-
-            // Save window
-            selectWindow("Log");
-            saveAs("Text",savePath+"uncertainties.log"); 
-
-        }
-
-    }
-
-}
-
-function getRectangular(value, uncertainty){
-    // Return a random value for the value based on a rectangular distribution
-    // - value = value to perturb
-    // - uncertainty = absolute uncertainty
-
-    return value + (((2.0*random())-1.0) * uncertainty);
-
-}
-
-function getGaussian(value, uncertainty){
-    // Return a random value for the value based on a Gaussian distribution
-    // - value = value to perturb (mean)
-    // - uncertainty = absolute uncertainty (SD)
-    
-    return uncertainty*random("gaussian") + value;
-
-}
-
-function pointerWidth(zoom){
-    // Return the width covered by the pointer in pixels
-    
-    size_p = 6;
-    
-    return (size_p / zoom);
-  }
-
-function makeNucMedVOI(){
-    // Function to reproduce `macros/QI-Image-Anlysis/makeNucMedROI-Spheres.ijm`
-
-    selectWindow("NM");
-
-    // Calculate the alignment of CT and NM in voxels
-    delta = calcNMCTalignmentXY("NM", "CT");
-    scale = calcNMCTscale("NM", "CT");
-    //Array.print(delta);
-
-    // Translate the ROIs from CT to NM in X and Y voxels
-    selectWindow("CT");
-    translateROImanagerdXdY(delta[0], delta[1]);
-
-    // Scale the ROIS to NM on CT (most accrate)
-    selectWindow("CT");
-    scaleROImanager(scale[0]);
-
-    // Translate the ROIs from CT to NM in Z
-    ctToNMROImanagerZ("NM", "CT");
-
-  } 
+} 
 // ***********************************************************************
 // * Common library of ImageJ macro functions
 // * 
@@ -452,8 +332,11 @@ function centreSliceCT(){
     ct_z_max = Array.findMaxima(ct_z,0.00001);
     ct_z_min = Array.findMinima(ct_z,0.00001);
     ct_z_half = (ct_z[ct_z_max[0]]+ct_z[ct_z_min[0]])/2;
+
+    //print(ct_z[ct_z_max[0]] + " "+ ct_z[ct_z_min[0]] + " " + ct_z_half);
     
     centre_z = centreProfile(ct_z, ct_z_half);
+    
     close();
     
     return round(centre_z);
@@ -472,6 +355,42 @@ function centreProfile(profile, threshold){
     }
     centre = (upper + lower) / 2;
     //print("lower: " + lower + " upper: " + upper + " centre: " + centre);
+    
+    return centre;
+}
+
+
+// Return the centre of a profile based on values passing threshold twice
+// - unc_profile = % unc for intensity of each profile position (gauss)
+// - unc_threshold = % to vary threshold within (rect)
+function centreProfileRand(profile, threshold, unc_profile, unc_threshold){
+
+    // Randomly vary the voxel values within the uncertainty
+    //Array.print(profile);
+    p_two = newArray(profile.length);
+
+    for (i = 0; i < profile.length; i++){
+        p_two[i] = getGaussian(profile[i],unc_profile/100.0*profile[i]);
+    }
+
+    //Array.print(p_two);
+    //Plot.create("New profile", "X", "Y", p_two);
+
+    // Randomly vary the threshold
+    new_threshold = getRectangular(threshold,unc_threshold/100.0*threshold);
+    //print("new_threshold = " + new_threshold);
+
+    for (i = 0; i < p_two.length / 2; i++){
+        if (p_two[i] < new_threshold){
+            lower = i;
+        }
+        if (p_two[profile.length-i-1] < new_threshold){
+            upper = profile.length-i-1;
+        }
+    }
+    centre = (upper + lower) / 2;
+    //print("lower: " + lower + " upper: " + upper + " centre: " + centre);
+    
     return centre;
 }
 
@@ -1029,3 +948,23 @@ function closeAllImages(){
     } 
 }
 //---------------------------------------------------------------------------
+
+
+
+function getRectangular(value, uncertainty){
+    // Return a random value for the value based on a rectangular distribution
+    // - value = value to perturb
+    // - uncertainty = absolute uncertainty
+
+    return value + (((2.0*random())-1.0) * uncertainty);
+
+}
+
+function getGaussian(value, uncertainty){
+    // Return a random value for the value based on a Gaussian distribution
+    // - value = value to perturb (mean)
+    // - uncertainty = absolute uncertainty (SD)
+    
+    return uncertainty*random("gaussian") + value;
+
+}

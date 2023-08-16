@@ -247,8 +247,11 @@ function centreSliceCT(){
     ct_z_max = Array.findMaxima(ct_z,0.00001);
     ct_z_min = Array.findMinima(ct_z,0.00001);
     ct_z_half = (ct_z[ct_z_max[0]]+ct_z[ct_z_min[0]])/2;
+
+    //print(ct_z[ct_z_max[0]] + " "+ ct_z[ct_z_min[0]] + " " + ct_z_half);
     
     centre_z = centreProfile(ct_z, ct_z_half);
+    
     close();
     
     return round(centre_z);
@@ -267,6 +270,42 @@ function centreProfile(profile, threshold){
     }
     centre = (upper + lower) / 2;
     //print("lower: " + lower + " upper: " + upper + " centre: " + centre);
+    
+    return centre;
+}
+
+
+// Return the centre of a profile based on values passing threshold twice
+// - unc_profile = % unc for intensity of each profile position (gauss)
+// - unc_threshold = % to vary threshold within (rect)
+function centreProfileRand(profile, threshold, unc_profile, unc_threshold){
+
+    // Randomly vary the voxel values within the uncertainty
+    //Array.print(profile);
+    p_two = newArray(profile.length);
+
+    for (i = 0; i < profile.length; i++){
+        p_two[i] = getGaussian(profile[i],unc_profile/100.0*profile[i]);
+    }
+
+    //Array.print(p_two);
+    //Plot.create("New profile", "X", "Y", p_two);
+
+    // Randomly vary the threshold
+    new_threshold = getRectangular(threshold,unc_threshold/100.0*threshold);
+    //print("new_threshold = " + new_threshold);
+
+    for (i = 0; i < p_two.length / 2; i++){
+        if (p_two[i] < new_threshold){
+            lower = i;
+        }
+        if (p_two[profile.length-i-1] < new_threshold){
+            upper = profile.length-i-1;
+        }
+    }
+    centre = (upper + lower) / 2;
+    //print("lower: " + lower + " upper: " + upper + " centre: " + centre);
+    
     return centre;
 }
 
@@ -824,3 +863,23 @@ function closeAllImages(){
     } 
 }
 //---------------------------------------------------------------------------
+
+
+
+function getRectangular(value, uncertainty){
+    // Return a random value for the value based on a rectangular distribution
+    // - value = value to perturb
+    // - uncertainty = absolute uncertainty
+
+    return value + (((2.0*random())-1.0) * uncertainty);
+
+}
+
+function getGaussian(value, uncertainty){
+    // Return a random value for the value based on a Gaussian distribution
+    // - value = value to perturb (mean)
+    // - uncertainty = absolute uncertainty (SD)
+    
+    return uncertainty*random("gaussian") + value;
+
+}

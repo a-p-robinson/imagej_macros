@@ -5,7 +5,13 @@
 
 var DATA_DIR = "/home/apr/Science/GE-RSCH/QI/data/Reconstruction/QI_01_09_22/";
 var RESULTS_DIR = "/home/apr/Science/GE-RSCH/QI/analysis-clean/image-analysis/results/";
-var testPath = "/var/home/apr/Science/rois/"
+
+// --- Variables ----
+var savePath = "/home/apr/Science/rois/x1000/"
+var zoom_factor = 2.0; // ImageJ zoom factor used to define the centres
+var nRand = 1000; // Number of random perturbation of VOI
+var seed = 2; // Random number seed
+var sub_set = 900;
 
 macro "loop_all_data_unc" {
 
@@ -94,10 +100,6 @@ macro "loop_all_data_unc" {
                 // Loop through rois
                 // We have a lot of ROIS to go through now.....!
 
-                zoom_factor = 2.0;
-                seed = 2;
-                nRand = 100;
-
                 for (r = 0; r < rois.length; r++){
             
                     // Get the "true" measurand value
@@ -110,15 +112,15 @@ macro "loop_all_data_unc" {
                     roiManager("reset")
 
                     // Array to store the PDF
-                    pdf_voiCounts = newArray(nRand);
-                    pdf_area = newArray(nRand);
-                    pdf_volume = newArray(nRand);
+                    pdf_voiCounts = newArray(sub_set);
+                    pdf_area = newArray(sub_set);
+                    pdf_volume = newArray(sub_set);
 
                     // Loop through the VOI perturbations
-                    for (nr = 0; nr < nRand; nr++){
+                    for (nr = 0; nr < sub_set; nr++){
 
                         // Construct the file name
-                        roiFile = testPath + cameraID+ "_" + phantomID + rois[r] + "_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nr + ".zip";
+                        roiFile = savePath + cameraID+ "_" + phantomID + rois[r] + "_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nr + ".zip";
                         print(roiFile);
                         
                         // Open the ROI
@@ -161,16 +163,16 @@ macro "loop_all_data_unc" {
                     Array.getStatistics(pdf_area, min_area, max_area, mean_area, stdDev_area);
 
                     selectWindow("Uncertainties");
-                    Table.set("Camera", kk, cameraID);
+                    Table.set("Camera", kk, cameraID); windowName +
                     Table.set("Energy", kk, windowName);
                     Table.set("Phantom", kk, phantoms[p]);
                     Table.set("Correction", kk, corrections[c]);
                     Table.set("Iterations", kk, itt[i]);
                     Table.set("Iterations", kk, itt[i]);
                     Table.set("VOI", kk, rois[r]);
-                    Table.set("nRand", kk, nRand);                        
+                    Table.set("nRand", kk, sub_set);                        
                     
-                    Table.set("Counts", kk, m_voiCounts);
+                    Table.set("Counts", kk, m_voiCounts); windowName +
                     Table.set("Mean(counts)", kk, mean_voiCounts);
                     Table.set("StdDev(counts)", kk, stdDev_voiCounts);
                     Table.set("u(counts) [%]", kk, 100.0*(stdDev_voiCounts/mean_voiCounts));
@@ -201,13 +203,13 @@ macro "loop_all_data_unc" {
     // Save Tables
     selectWindow("VOI");
     Table.update;
-    Table.save(testPath + cameraID + "_" + windowName + "_VOIstats.csv"); 
+    Table.save(savePath + cameraID + "_" + windowName + "_" + nRand + "_" + sub_set + "_VOIstats.csv"); 
     selectWindow("Uncertainties");
     Table.update;
-    Table.save(testPath + cameraID + "_" + windowName + "_VOIuncertainties.csv"); 
+    Table.save(savePath + cameraID + "_" + windowName + "_" + nRand + "_" + sub_set + "_VOIuncertainties.csv"); 
     selectWindow("Whole Image");
     Table.update;
-    Table.save(testPath + cameraID + "_" + windowName + "_WholeImagestats.csv"); 
+    Table.save(savePath + cameraID + "_" + windowName + "_" + nRand + "_" + sub_set + "_WholeImagestats.csv"); 
 
 
 }

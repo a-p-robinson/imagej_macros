@@ -42,14 +42,19 @@ function run_me(args){
     centreCT[2] = centreSliceCT();
 
     // Find centre in x and y
+    selectWindow("CT");
     setSlice(centreCT[2]);
 
     getDimensions(width, height, channels, slices, frames);
     makeRectangle(0, 0, width, height);
     ct_x = getProfile();
+    //run("Plot Profile");
 
+    //exit();
     selectWindow("CT");
+    //makeRectangle(0, 0, width, height);
     setKeyDown("alt"); ct_y = getProfile();
+    //run("Plot Profile");
 
     threshold = -1200;
     centreCT[0] = centreProfile(ct_x, threshold);
