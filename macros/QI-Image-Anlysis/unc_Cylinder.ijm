@@ -52,6 +52,7 @@ function run_me(args){
 
     // Make the image that we use for centreSliceCT()
     getVoxelSize(width, height, depth, unit);
+
     run("Reslice [/]...", "output="+depth+" start=Top avoid");
     selectWindow("Reslice of CT");
     setSlice(nSlices()/2);
@@ -64,8 +65,24 @@ function run_me(args){
     ct_z_min = Array.findMinima(ct_z,0.00001);
     ct_z_half = (ct_z[ct_z_max[0]]+ct_z[ct_z_min[0]])/2;
 
-    // Find the "real" centre
+    // Find the "real" centre (x,y,z)
     m_centre_z = centreProfile(ct_z, ct_z_half);
+
+    // Find centre in x and y
+    selectWindow("CT");
+    setSlice(m_centre_z);
+
+    getDimensions(width, height, channels, slices, frames);
+    makeRectangle(0, 0, width, height);
+    ct_x = getProfile();
+
+    selectWindow("CT");
+    setKeyDown("alt"); ct_y = getProfile();
+    
+    threshold = -1200;
+    m_centre_x = centreProfile(ct_x, threshold);  
+    threshold = -700;
+    m_centre_y = centreProfile(ct_y, threshold); 
 
     // Find the centre of the profile (With random fluctuations)
     centre_z = newArray(nRand);
@@ -74,19 +91,19 @@ function run_me(args){
     unc_threshold = 10; //%
     unc_profile = 5; //%
     
-    for (nz = 0; nz < nRand; nz++){
-        centre_z[nz] = centreProfileRand(ct_z, ct_z_half, unc_profile, unc_threshold);
-        print(nz);  
-    }
 
-    run("Select None");
-    
-    for (nx = 0; nx < nRand; nx++){
+
+    for (nz = 0; nz < nRand; nz++){
+        run("Select None");
+        centre_z[nz] = centreProfileRand(ct_z, ct_z_half, unc_profile, unc_threshold);
+        //centre_z[nz] = centreProfile(ct_z, ct_z_half);
 
         // Find centre in x and y
         selectWindow("CT");
-        setSlice(centre_z[nx]);
+        setSlice(centre_z[nz]);
+
         getDimensions(width, height, channels, slices, frames);
+        //makeRectangle(0, 0, width, height);
         makeRectangle(0, 0, width, height);
         ct_x = getProfile();
 
@@ -96,10 +113,21 @@ function run_me(args){
         //run("Plot Profile");
 
         threshold = -1200;
-        centre_x[nx] = centreProfileRand(ct_x, threshold, unc_profile, unc_threshold);  
+        centre_x[nz] = centreProfileRand(ct_x, threshold, unc_profile, unc_threshold);  
+        //centre_x[nz] = centreProfile(ct_x, threshold);  
         threshold = -700;
-        centre_y[nx] = centreProfileRand(ct_y, threshold, unc_profile, unc_threshold); 
+        centre_y[nz] = centreProfileRand(ct_y, threshold, unc_profile, unc_threshold); 
+        //centre_y[nz] = centreProfile(ct_y, threshold); 
+
+        // print(nz);  
     }
+
+    // run("Select None");
+    
+    // for (nx = 0; nx < nRand; nx++){
+
+
+    // }
 
 
     Array.getStatistics(centre_x, min_x, max_x, mean_x, stdDev_x);

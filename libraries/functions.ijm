@@ -251,9 +251,7 @@ function centreSliceCT(){
     //print(ct_z[ct_z_max[0]] + " "+ ct_z[ct_z_min[0]] + " " + ct_z_half);
     
     centre_z = centreProfile(ct_z, ct_z_half);
-    
-    close();
-    
+        
     return round(centre_z);
 }
 
