@@ -3,15 +3,16 @@
 Define a cylindrical ROI based on the centre of the phantom using CT
 */
 
-var savePath = "/var/home/apr/Science/rois/x1000/"
-var zoom_factor = 2.0; // ImageJ zoom factor used to define the centres
-var radius_perc_unc = 0.33; // Sphere radius percentage uncertainty%
+var savePath = "/var/home/apr/Science/rois/x100_Cylinder/"
+var radius_perc_unc = 1.0  // Sphere radius percentage uncertainty (%)
+var height_perc_unc = 1.0; // Cylinder height percentage uncertainty (%)
+var unc_threshold = 10; // Uncertainty on CT threshold (%)
+var unc_profile = 5; // Uncertainty on profile value (%)
+
 var nRand = 100; // Number of random perturbation of VOI
 var seed = 2; // Random number seed
-var doRadiusUnc = 1;
-var doPositionUnc = 1;
 
-macro "cylinderROI" {
+macro "unc_Cylinder" {
 
     cameras = newArray("DR", "Optima","CZT-WEHR","CZT-MEHRS");
     // cameras = newArray("DR");
@@ -32,19 +33,32 @@ macro "cylinderROI" {
 
     }
 
+    // Save window
+    selectWindow("Log");
+    saveAs("Text",savePath+"cylinder_uncertainties.log"); 
+    
 }
 
 function run_me(args){
+
+    print("unc_threshold = " + unc_threshold + "%");
+    print("unc_profile = " + unc_profile + "%");
+    print("nRand = " + nRand);
+    print("seed = " + seed);
 
     cameraID = args[0];
     phantomID = args[1];
     roiID = args[2];
 
-    random("seed",2);
+    phantomRadius = 216 * 1.3 / 2.0;
+    phantomHeight = 186 * 1.2;
+
+    random("seed",seed);
+
+    // Open the Nuc Med reconstructed image
+    openNMData(cameraID, phantomID);
 
     // Open the CT image
-    // cameraID = "DR";
-    // phantomID = "Cylinder";
     openCTData(cameraID, phantomID); 
 
     // Find the centre in Z
@@ -88,10 +102,6 @@ function run_me(args){
     centre_z = newArray(nRand);
     centre_x = newArray(nRand);
     centre_y = newArray(nRand);
-    unc_threshold = 10; //%
-    unc_profile = 5; //%
-    
-
 
     for (nz = 0; nz < nRand; nz++){
         run("Select None");
@@ -119,93 +129,67 @@ function run_me(args){
         centre_y[nz] = centreProfileRand(ct_y, threshold, unc_profile, unc_threshold); 
         //centre_y[nz] = centreProfile(ct_y, threshold); 
 
-        // print(nz);  
+        // We now have the centre so we can do the rest of the cylinder definition with random volume
+     
+        // 	Get a random radius and height
+        new_phantomRadius = getGaussian(phantomRadius,radius_perc_unc/100.0*phantomRadius);  
+        new_phantomHeight = getGaussian(phantomHeight,height_perc_unc/100.0*phantomHeight);
+
+        selectWindow("CT");
+        run("Select None");
+        roiManager("reset");
+
+        // Using a modified version which randomly decides on the last slice for even numbers of slices.
+        createCylinderRand(centre_x[nz], centre_y[nz], centre_z[nz], new_phantomRadius, new_phantomHeight);
+
+        // Save the CT ROI dataset
+        roiManager("Save", savePath + cameraID + "_" + phantomID + roiID + "_RoiSet_XYZ_seed_" + seed + "_nr_" + nz + ".zip");
+
+        print("CTotoNM....");
+
+        // Translate to a NM ROI
+        makeNucMedVOI();
+        
+        // Save the CT ROI dataset
+        roiManager("Save", savePath + cameraID + "_" + phantomID + roiID + "_NM_RoiSet_XYZ_seed_" + seed + "_nr_" + nz + ".zip");
+
+
     }
 
-    // run("Select None");
-    
-    // for (nx = 0; nx < nRand; nx++){
-
-
-    // }
-
-
+    // Get the position uncertainties
     Array.getStatistics(centre_x, min_x, max_x, mean_x, stdDev_x);
     Array.getStatistics(centre_y, min_y, max_y, mean_y, stdDev_y);
     Array.getStatistics(centre_z, min_z, max_z, mean_z, stdDev_z);
-
 
     print("[x] " + m_centre_x + " mean = " + mean_x + " StdDev = " + stdDev_x + " unc [%] = " + 100.0*(stdDev_x/mean_x));
     print("[y] " + m_centre_y + " mean = " + mean_y + " StdDev = " + stdDev_y + " unc [%] = " + 100.0*(stdDev_y/mean_y));
     print("[z] " + m_centre_z + " mean = " + mean_z + " StdDev = " + stdDev_z + " unc [%] = " + 100.0*(stdDev_z/mean_z));
 
 
-    
-    // // Find the centre of the profile
-    // for (i = 0; i < 100; i++){
-    //     // Modify the threshold and see how the values change
-    //     centre_z = centreProfile(ct_z, ct_z_half-i);    
-    //     print("[" + i + "] threhsold = " + ct_z_half-i + " centre_z = " + centre_z);
-    //     centre_z = centreProfile(ct_z, ct_z_half+i);    
-    //     print("[" + i + "] threhsold = " + ct_z_half+1 + " centre_z = " + centre_z);
-    // }
-    
-    // print("------------------");
-    // for (i = 0; i < 100; i++){
-    //     centre_z = centreProfileRand(ct_z, ct_z_half,50);
-    //     print("[Random] threshold = " + ct_z_half + " centre_z = " + centre_z);
-    // }
-
-    // What if we randomly fluctuate each pixel in the profile within an uncertainty
-    // - use a new function for this..
-
-
-
-
-    // // Find centre in x and y
-    // selectWindow("CT");
-    // setSlice(centreCT[2]);
-
-    // getDimensions(width, height, channels, slices, frames);
-    // makeRectangle(0, 0, width, height);
-    // ct_x = getProfile();
-    // //run("Plot Profile");
-
-    // //exit();
-    // selectWindow("CT");
-    // //makeRectangle(0, 0, width, height);
-    // setKeyDown("alt"); ct_y = getProfile();
-    // //run("Plot Profile");
-
-    // threshold = -1200;
-    // centreCT[0] = centreProfile(ct_x, threshold);
-    // threshold = -700;
-    // centreCT[1] = centreProfile(ct_y, threshold);
-
-    // Array.print(centreCT);
-
-    // // Make ROIS
-    // // 	Cylinder inside diameter: 21.6 cm * 130 % = 28.08 cm
-    // // 	Cylinder inside height: 18.6 cm * 120 % = 22.32 cm
-    // phantomRadius = 216 * 1.3 / 2.0;
-    // phantomHeight = 186 * 1.2;
-    // //phantomRadius = 216  / 2.0;
-    // //phantomHeight = 186;
-
-    // selectWindow("CT");
-    // run("Select None");
-    // roiManager("reset");
-
-    // createCylinder(centreCT[0], centreCT[1], centreCT[2], phantomRadius, phantomHeight);
-
-    // // Save the ROI dataset
-    // //roiDirectory = "/home/apr/Science/GE-RSCH/QI/analysis/rois/";
-    // roiManager("Save", roiDirectory + cameraID + "_" + phantomID + roiID + "_RoiSet_XYZ.zip");
-
-
 }
 
- 
+function makeNucMedVOI(){
+    // Function to reproduce `macros/QI-Image-Anlysis/makeNucMedROI-Spheres.ijm`
+
+    selectWindow("NM");
+
+    // Calculate the alignment of CT and NM in voxels
+    delta = calcNMCTalignmentXY("NM", "CT");
+    scale = calcNMCTscale("NM", "CT");
+    //Array.print(delta);
+
+    // Translate the ROIs from CT to NM in X and Y voxels
+    selectWindow("CT");
+    translateROImanagerdXdY(delta[0], delta[1]);
+
+    // Scale the ROIS to NM on CT (most accrate)
+    selectWindow("CT");
+    scaleROImanager(scale[0]);
+
+    // Translate the ROIs from CT to NM in Z
+    ctToNMROImanagerZ("NM", "CT");
+
+  } 
 // ***********************************************************************
 // * Common library of ImageJ macro functions
 // * 
@@ -513,6 +497,55 @@ function centreProfileRand(profile, threshold, unc_profile, unc_threshold){
     //print("lower: " + lower + " upper: " + upper + " centre: " + centre);
     
     return centre;
+}
+
+//------------------------------------------------------------------
+// creatCylinder but with a random choice of last slice
+function createCylinderRand(x, y, z, R, H){
+
+    // Get image stats
+    getVoxelSize(width, height, depth, unit);
+  
+    // See how many slices we need
+    ns = round(H / depth);
+    print("H = " + H + " nSlices = " + ns + " depth = " + depth);
+
+    // If this is odd then we add an even number of slices either slide of z
+    // If it is even then we have to go 1 more slice on one slide or the other...!
+    if (ns%2 == 1){
+        first_slice = z - floor(ns/2);
+        last_slice  = z + floor(ns/2);
+    }
+    if (ns%2 == 0){
+        // Decide randomly which way to place the first and last slices
+        if (random() < 0.5){
+            //print("One");
+            first_slice = z - floor(ns/2);
+            last_slice  = z + floor(ns/2) - 1; 
+        }
+        else{
+            //print("Two");
+            first_slice = z - floor(ns/2) + 1;
+            last_slice  = z + floor(ns/2);
+        }
+
+    }
+
+    // Check we haven't gone off the end of image
+    if(first_slice < 0){
+        first_slice = 1;
+    }
+    if(last_slice > nSlices){
+        last_slice = nSlices;
+    }
+    // print("First: " + first_slice + " Last: :" + last_slice);
+    // print(floor(ns/2));
+    // print(z);
+
+    for (i = first_slice; i <= last_slice; i++){
+        createCircle(x, y, i, R);
+    }
+	    
 }
 
 //------------------------------------------------------------------

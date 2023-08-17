@@ -308,6 +308,55 @@ function centreProfileRand(profile, threshold, unc_profile, unc_threshold){
 }
 
 //------------------------------------------------------------------
+// creatCylinder but with a random choice of last slice
+function createCylinderRand(x, y, z, R, H){
+
+    // Get image stats
+    getVoxelSize(width, height, depth, unit);
+  
+    // See how many slices we need
+    ns = round(H / depth);
+    print("H = " + H + " nSlices = " + ns + " depth = " + depth);
+
+    // If this is odd then we add an even number of slices either slide of z
+    // If it is even then we have to go 1 more slice on one slide or the other...!
+    if (ns%2 == 1){
+        first_slice = z - floor(ns/2);
+        last_slice  = z + floor(ns/2);
+    }
+    if (ns%2 == 0){
+        // Decide randomly which way to place the first and last slices
+        if (random() < 0.5){
+            //print("One");
+            first_slice = z - floor(ns/2);
+            last_slice  = z + floor(ns/2) - 1; 
+        }
+        else{
+            //print("Two");
+            first_slice = z - floor(ns/2) + 1;
+            last_slice  = z + floor(ns/2);
+        }
+
+    }
+
+    // Check we haven't gone off the end of image
+    if(first_slice < 0){
+        first_slice = 1;
+    }
+    if(last_slice > nSlices){
+        last_slice = nSlices;
+    }
+    // print("First: " + first_slice + " Last: :" + last_slice);
+    // print(floor(ns/2));
+    // print(z);
+
+    for (i = first_slice; i <= last_slice; i++){
+        createCircle(x, y, i, R);
+    }
+	    
+}
+
+//------------------------------------------------------------------
 // Generate cylindrical VOI data on the open image centered on (x,y,z)
 //  - x,y,z are given in terms of slice or voxel
 //  - R is the radius in mm
