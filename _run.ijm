@@ -1,195 +1,217 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /* 
-Define a cylindrical ROI based on the centre of the phantom using CT
+    Get the value of a measurand using a PDF for a VOI
 */
 
-var savePath = "/var/home/apr/Science/rois/x100_Cylinder/"
-var radius_perc_unc = 1.0  // Sphere radius percentage uncertainty (%)
-var height_perc_unc = 1.0; // Cylinder height percentage uncertainty (%)
-var unc_threshold = 10; // Uncertainty on CT threshold (%)
-var unc_profile = 5; // Uncertainty on profile value (%)
+var DATA_DIR = "/home/apr/Science/GE-RSCH/QI/data/Reconstruction/QI_01_09_22/";
+var RESULTS_DIR = "/home/apr/Science/GE-RSCH/QI/analysis-clean/image-analysis/results/";
 
+// --- Variables ----
+var savePath = "/var/home/apr/Science/rois/x100_Cylinder/"
 var nRand = 100; // Number of random perturbation of VOI
 var seed = 2; // Random number seed
+var sub_set = 100;
 
-macro "unc_Cylinder" {
+macro "loop_all_data_unc" {
 
-    cameras = newArray("DR", "Optima","CZT-WEHR","CZT-MEHRS");
-    // cameras = newArray("DR");
-    args = newArray(3);
-    args[1] = "Cylinder";
-    args[2] = "_CT";
-    
-    // Loop through all the cameras
-    for (c = 0; c < cameras.length; c++){
+    cameraID = "DR";
+    windowName = "EM2";
+    // phantoms = newArray("Cylinder","Sphere1","Sphere2","2-Organ");
+    phantoms = newArray(1);
+    phantoms[0] = "Cylinder"
 
-        args[0] = cameras[c];
+    //corrections = newArray("NC","AC","ACSC");
+    corrections = newArray(1);
+    corrections[0] = "AC";
 
-        print(cameras[c]);
-        run_me(args);
+    //itt = newArray(1,2,3,4,5,10,20,30,40,50);
+    itt = newArray(1);
+    itt[0] = 30;
 
-        // closeAllWindows();
-        closeAllImages();
+    // Use an array for the output so we can get statistics
+    // - Array.getStatistics(array, min, max, mean, stdDev)
+    // - Or we coudl use Table.getColumn()?
 
-    }
+    // Create output tables
+    // Make a Table for output
+    table_name = "Whole Image";
+    Table.create(table_name);
+    ii = 0;
+      
+    table_name = "VOI";
+    Table.create(table_name);
+    jj= 0;
 
-    // Save window
-    selectWindow("Log");
-    saveAs("Text",savePath+"cylinder_uncertainties.log"); 
-    
-}
+    table_name = "Uncertainties";
+    Table.create(table_name);
+    jj= 0;
+    kk=0;
 
-function run_me(args){
+    // Loop through all the phantoms
+    for (p = 0; p < phantoms.length; p++){
 
-    print("unc_threshold = " + unc_threshold + "%");
-    print("unc_profile = " + unc_profile + "%");
-    print("nRand = " + nRand);
-    print("seed = " + seed);
+        phantomID = phantoms[p];
 
-    cameraID = args[0];
-    phantomID = args[1];
-    roiID = args[2];
-
-    phantomRadius = 216 * 1.3 / 2.0;
-    phantomHeight = 186 * 1.2;
-
-    random("seed",seed);
-
-    // Open the Nuc Med reconstructed image
-    openNMData(cameraID, phantomID);
-
-    // Open the CT image
-    openCTData(cameraID, phantomID); 
-
-    // Find the centre in Z
-    selectWindow("CT");
-
-    // Make the image that we use for centreSliceCT()
-    getVoxelSize(width, height, depth, unit);
-
-    run("Reslice [/]...", "output="+depth+" start=Top avoid");
-    selectWindow("Reslice of CT");
-    setSlice(nSlices()/2);
-    getDimensions(width, height, channels, slices, frames);
-    makeRectangle(0, 0, width, height);
-    setKeyDown("alt"); ct_z = getProfile();
-
-    // Find the threshold
-    ct_z_max = Array.findMaxima(ct_z,0.00001);
-    ct_z_min = Array.findMinima(ct_z,0.00001);
-    ct_z_half = (ct_z[ct_z_max[0]]+ct_z[ct_z_min[0]])/2;
-
-    // Find the "real" centre (x,y,z)
-    m_centre_z = centreProfile(ct_z, ct_z_half);
-
-    // Find centre in x and y
-    selectWindow("CT");
-    setSlice(m_centre_z);
-
-    getDimensions(width, height, channels, slices, frames);
-    makeRectangle(0, 0, width, height);
-    ct_x = getProfile();
-
-    selectWindow("CT");
-    setKeyDown("alt"); ct_y = getProfile();
-    
-    threshold = -1200;
-    m_centre_x = centreProfile(ct_x, threshold);  
-    threshold = -700;
-    m_centre_y = centreProfile(ct_y, threshold); 
-
-    // Find the centre of the profile (With random fluctuations)
-    centre_z = newArray(nRand);
-    centre_x = newArray(nRand);
-    centre_y = newArray(nRand);
-
-    for (nz = 0; nz < nRand; nz++){
-        run("Select None");
-        centre_z[nz] = centreProfileRand(ct_z, ct_z_half, unc_profile, unc_threshold);
-        //centre_z[nz] = centreProfile(ct_z, ct_z_half);
-
-        // Find centre in x and y
-        selectWindow("CT");
-        setSlice(centre_z[nz]);
-
-        getDimensions(width, height, channels, slices, frames);
-        //makeRectangle(0, 0, width, height);
-        makeRectangle(0, 0, width, height);
-        ct_x = getProfile();
-
-        selectWindow("CT");
-        //makeRectangle(0, 0, width, height);
-        setKeyDown("alt"); ct_y = getProfile();
-        //run("Plot Profile");
-
-        threshold = -1200;
-        centre_x[nz] = centreProfileRand(ct_x, threshold, unc_profile, unc_threshold);  
-        //centre_x[nz] = centreProfile(ct_x, threshold);  
-        threshold = -700;
-        centre_y[nz] = centreProfileRand(ct_y, threshold, unc_profile, unc_threshold); 
-        //centre_y[nz] = centreProfile(ct_y, threshold); 
-
-        // We now have the centre so we can do the rest of the cylinder definition with random volume
-     
-        // 	Get a random radius and height
-        new_phantomRadius = getGaussian(phantomRadius,radius_perc_unc/100.0*phantomRadius);  
-        new_phantomHeight = getGaussian(phantomHeight,height_perc_unc/100.0*phantomHeight);
-
-        selectWindow("CT");
-        run("Select None");
-        roiManager("reset");
-
-        // Using a modified version which randomly decides on the last slice for even numbers of slices.
-        createCylinderRand(centre_x[nz], centre_y[nz], centre_z[nz], new_phantomRadius, new_phantomHeight);
-
-        // Save the CT ROI dataset
-        roiManager("Save", savePath + cameraID + "_" + phantomID + roiID + "_RoiSet_XYZ_seed_" + seed + "_nr_" + nz + ".zip");
-
-        print("CTotoNM....");
-
-        // Translate to a NM ROI
-        makeNucMedVOI();
+        // Define what VOIs go with that phantom
+        if (phantomID == "Cylinder"){
+            rois = newArray("_CT_NM");
+        }
         
-        // Save the CT ROI dataset
-        roiManager("Save", savePath + cameraID + "_" + phantomID + roiID + "_NM_RoiSet_XYZ_seed_" + seed + "_nr_" + nz + ".zip");
+        if (phantomID == "Sphere1"){
+            rois = newArray("_CT_Sphere_1_NM","_CT_Sphere_2_NM","_CT_Sphere_3_NM","_CT_Sphere_4_NM","_CT_Sphere_5_NM","_CT_Sphere_6_NM");
+        }
+        
+        if (phantomID == "Sphere2"){
+            rois = newArray("_CT_NM");
+        }
+        
+        if (phantomID == "2-Organ"){
+            rois = newArray("_CT_spleen_NM","_CT_cortex_NM","_CT_medulla_NM");
+        }
+        
+        // Loop through corrections                                  
+        for (c = 0; c < corrections.length; c++){
+            
+            // Loop through reconstruction itterations
+            for (i = 0; i < itt.length; i++){
+
+                print(phantoms[p] + ":" + corrections[c] + ":" + itt[i]);
+
+                // Open the Nuc Med file
+                fileName = DATA_DIR+cameraID+"/"+phantomID+"/" + windowName + "/SS5_IT" + itt[i] + "/SPECTCT_"+windowName+"_IR"+corrections[c]+"001_DS.dcm";
+                open(fileName);
+                rename(itt[i]);
+                run("Fire");
+              
+                // Get total counts for that image
+                counts = sumStack();
+
+                // Save results to table
+                selectWindow("Whole Image");
+                Table.set("Camera", ii, cameraID);
+                Table.set("Energy", ii, windowName);
+                Table.set("Phantom", ii, phantoms[p]);
+                Table.set("Correction", ii, corrections[c]);
+                Table.set("Iterations", ii, itt[i]);
+                Table.set("Total Counts", ii, counts);
+                ii++;
+                
+                // Loop through rois
+                // We have a lot of ROIS to go through now.....!
+
+                for (r = 0; r < rois.length; r++){
+            
+                    // Get the "true" measurand value
+                    // Open the ROI
+                    openROI(cameraID,phantoms[p],rois[r]);
+                    selectWindow(itt[i]);
+                    m_voiCounts = countsROImanager();
+                    m_geometry = newArray(2);
+                    m_geometry = getVolumeArea();
+                    roiManager("reset")
+
+                    // Array to store the PDF
+                    pdf_voiCounts = newArray(sub_set);
+                    pdf_area = newArray(sub_set);
+                    pdf_volume = newArray(sub_set);
+
+                    // Loop through the VOI perturbations
+                    for (nr = 0; nr < sub_set; nr++){
+
+                        // Construct the file name
+                        roiFile = savePath + cameraID + "_" + phantomID + rois[r] + "_RoiSet_XYZ_seed_" + seed + "_nr_" + nr + ".zip";
+                        print(roiFile);
+                        
+                        // Open the ROI
+                        roiManager("Open",roiFile);
+                        roiManager("Sort");
+
+                        // Get counts in VOI for each iteration image
+                        selectWindow(itt[i]);
+                        voiCounts = countsROImanager();
+                        geometry = newArray(2);
+                        geometry = getVolumeArea();
+
+                        // Close VOI
+                        roiManager("reset")
+
+                        // Save the results to an array
+                        pdf_voiCounts[nr] = voiCounts;
+                        pdf_volume[nr] = geometry[0];
+                        pdf_area[nr] = geometry[1];
+                        
+                        // Save results to table
+                        selectWindow("VOI");
+                        Table.set("Camera", jj, cameraID);
+                        Table.set("Energy", jj, windowName);
+                        Table.set("Phantom", jj, phantoms[p]);
+                        Table.set("Correction", jj, corrections[c]);
+                        Table.set("Iterations", jj, itt[i]);
+                        Table.set("nr", jj, nr);                        
+                        Table.set("VOI", jj, rois[r]);
+                        Table.set("VOI Counts", jj, voiCounts);
+                        Table.set("VOI Volume (mm^3)",jj, d2s(geometry[0],2));
+                        Table.set("VOI Surface Area (mm^2)",jj, d2s(geometry[1],2));
+                        jj++;
+                        
+                    }
+
+                    // Get the uncertainty for the VOI
+                    Array.getStatistics(pdf_voiCounts, min_voiCounts, max_voiCounts, mean_voiCounts, stdDev_voiCounts);
+                    Array.getStatistics(pdf_volume, min_volume, max_volume, mean_volume, stdDev_volume);
+                    Array.getStatistics(pdf_area, min_area, max_area, mean_area, stdDev_area);
+
+                    selectWindow("Uncertainties");
+                    Table.set("Camera", kk, cameraID); windowName +
+                    Table.set("Energy", kk, windowName);
+                    Table.set("Phantom", kk, phantoms[p]);
+                    Table.set("Correction", kk, corrections[c]);
+                    Table.set("Iterations", kk, itt[i]);
+                    Table.set("Iterations", kk, itt[i]);
+                    Table.set("VOI", kk, rois[r]);
+                    Table.set("nRand", kk, sub_set);                        
+                    
+                    Table.set("Counts", kk, m_voiCounts); windowName +
+                    Table.set("Mean(counts)", kk, mean_voiCounts);
+                    Table.set("StdDev(counts)", kk, stdDev_voiCounts);
+                    Table.set("u(counts) [%]", kk, 100.0*(stdDev_voiCounts/mean_voiCounts));
+                    
+                    Table.set("VOI Volume (mm^3)", kk, m_geometry[0]);
+                    Table.set("Mean(volume)", kk, mean_volume);
+                    Table.set("StdDev(volume)", kk, stdDev_volume);
+                    Table.set("u(volume) [%]", kk, 100.0*(stdDev_volume/mean_volume));
+
+                    Table.set("VOI Surface Area (mm^2)", kk, m_geometry[1]);
+                    Table.set("Mean(area)", kk, mean_area);
+                    Table.set("StdDev(area)", kk, stdDev_area);
+                    Table.set("u(area) [%]", kk, 100.0*(stdDev_area/mean_area));
+
+                    kk++;
+
+                } // ROI loop
+
+                // Close Image
+                close(itt[i]);
+    
 
 
+            }
+        }                           
     }
+    
+    // Save Tables
+    selectWindow("VOI");
+    Table.update;
+    Table.save(savePath + cameraID + "_" + windowName + "_" + nRand + "_" + sub_set + "_VOIstats.csv"); 
+    selectWindow("Uncertainties");
+    Table.update;
+    Table.save(savePath + cameraID + "_" + windowName + "_" + nRand + "_" + sub_set + "_VOIuncertainties.csv"); 
+    selectWindow("Whole Image");
+    Table.update;
+    Table.save(savePath + cameraID + "_" + windowName + "_" + nRand + "_" + sub_set + "_WholeImagestats.csv"); 
 
-    // Get the position uncertainties
-    Array.getStatistics(centre_x, min_x, max_x, mean_x, stdDev_x);
-    Array.getStatistics(centre_y, min_y, max_y, mean_y, stdDev_y);
-    Array.getStatistics(centre_z, min_z, max_z, mean_z, stdDev_z);
 
-    print("[x] " + m_centre_x + " mean = " + mean_x + " StdDev = " + stdDev_x + " unc [%] = " + 100.0*(stdDev_x/mean_x));
-    print("[y] " + m_centre_y + " mean = " + mean_y + " StdDev = " + stdDev_y + " unc [%] = " + 100.0*(stdDev_y/mean_y));
-    print("[z] " + m_centre_z + " mean = " + mean_z + " StdDev = " + stdDev_z + " unc [%] = " + 100.0*(stdDev_z/mean_z));
-
-
-}
-
-function makeNucMedVOI(){
-    // Function to reproduce `macros/QI-Image-Anlysis/makeNucMedROI-Spheres.ijm`
-
-    selectWindow("NM");
-
-    // Calculate the alignment of CT and NM in voxels
-    delta = calcNMCTalignmentXY("NM", "CT");
-    scale = calcNMCTscale("NM", "CT");
-    //Array.print(delta);
-
-    // Translate the ROIs from CT to NM in X and Y voxels
-    selectWindow("CT");
-    translateROImanagerdXdY(delta[0], delta[1]);
-
-    // Scale the ROIS to NM on CT (most accrate)
-    selectWindow("CT");
-    scaleROImanager(scale[0]);
-
-    // Translate the ROIs from CT to NM in Z
-    ctToNMROImanagerZ("NM", "CT");
-
-  } 
+} 
 // ***********************************************************************
 // * Common library of ImageJ macro functions
 // * 
