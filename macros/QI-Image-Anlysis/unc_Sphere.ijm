@@ -179,7 +179,7 @@ function pointerWidth(zoom){
     size_p = 6;
     
     return (size_p / zoom);
-  }
+}
 
 function makeNucMedVOI(){
     // Function to reproduce `macros/QI-Image-Anlysis/makeNucMedROI-Spheres.ijm`
@@ -202,4 +202,4 @@ function makeNucMedVOI(){
     // Translate the ROIs from CT to NM in Z
     ctToNMROImanagerZ("NM", "CT");
 
-  }
+}
