@@ -15,8 +15,8 @@ macro "makeNucMedROI" {
     cameras = newArray("DR");
     phantoms = newArray(1);
     phantoms[0] = "2-Organ";
-    //rois = newArray("_CT_spleen","_CT_cortex","_CT_medulla")
-    rois = newArray("_CT_spleen");
+    rois = newArray("_CT_spleen","_CT_cortex","_CT_medulla")
+    // rois = newArray("_CT_spleen");
 
     args = newArray(3);
     // args[1] = "Cylinder";

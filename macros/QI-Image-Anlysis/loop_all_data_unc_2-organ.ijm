@@ -7,8 +7,9 @@ var DATA_DIR = "/home/apr/Science/GE-RSCH/QI/data/Reconstruction/QI_01_09_22/";
 var RESULTS_DIR = "/home/apr/Science/GE-RSCH/QI/analysis-clean/image-analysis/results/";
 
 // --- Variables ----
-var savePath = "/var/home/apr/Science/rois/x100_Cylinder/"
+var savePath = "/home/apr/Science/rois/x100/"
 var nRand = 100; // Number of random perturbation of VOI
+var zoom_factor = 3.0; // ImageJ zoom factor used to define the centres
 var seed = 2; // Random number seed
 var sub_set = 100;
 
@@ -20,7 +21,7 @@ macro "loop_all_data_unc" {
     windowName = "EM2";
     // phantoms = newArray("Cylinder","Sphere1","Sphere2","2-Organ");
     phantoms = newArray(1);
-    phantoms[0] = "Cylinder"
+    phantoms[0] = "2-Organ"
 
     //corrections = newArray("NC","AC","ACSC");
     corrections = newArray(1);
@@ -69,6 +70,7 @@ macro "loop_all_data_unc" {
         
         if (phantomID == "2-Organ"){
             rois = newArray("_CT_spleen_NM","_CT_cortex_NM","_CT_medulla_NM");
+            // rois = newArray("_CT_spleen_NM");
         }
         
         // Loop through corrections                                  
@@ -121,7 +123,7 @@ macro "loop_all_data_unc" {
                     for (nr = 0; nr < sub_set; nr++){
 
                         // Construct the file name
-                        roiFile = savePath + cameraID + "_" + phantomID + rois[r] + "_RoiSet_XYZ_seed_" + seed + "_nr_" + nr + ".zip";
+                        roiFile = savePath + cameraID + "_" + phantomID + rois[r] + "_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nr + ".zip";
                         print(roiFile);
                         
                         // Open the ROI
