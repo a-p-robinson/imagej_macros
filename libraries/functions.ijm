@@ -699,6 +699,29 @@ function moveROIslice(nmSlice){
 } 
 //------------------------------------------------------------------
 
+//------------------------------------------------------------------
+// Get total voxels in ROI manager
+function voxelsROImanager(){
+    DEBUG = 0;
+
+    count = roiManager("count"); 
+    current = roiManager("index"); 
+
+    // Variable for output
+    results = 0;
+
+    for (i = 0; i < count; i++) { 
+	    roiManager("select", i); 
+
+        Roi.getContainedPoints(t_x, t_y)
+        results = results + t_x.length;
+    
+    }
+
+    return results;
+}
+//------------------------------------------------------------------
+
 
 //------------------------------------------------------------------
 // Get total counts in ROI manager
@@ -930,3 +953,23 @@ function getGaussian(value, uncertainty){
     return uncertainty*random("gaussian") + value;
 
 }
+
+//---------------------------------------------------------------------------                                                        
+// Return a nicely formatted time stamp string                                                                                       
+function printTime() {
+    MonthNames = newArray("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+    DayNames = newArray("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat");
+    getDateAndTime(year, month, dayOfWeek, dayOfMonth, hour, minute, second, msec);
+    TimeString = "Date: " + DayNames[dayOfWeek] + " ";
+    if (dayOfMonth < 10) { TimeString = TimeString + "0"; }
+    TimeString = TimeString + dayOfMonth + "-" + MonthNames[month] + "-" + year + " Time: ";
+    if (hour < 10) { TimeString = TimeString + "0"; }
+    TimeString = TimeString + hour + ":";
+    if (minute < 10) { TimeString = TimeString + "0"; }
+    TimeString = TimeString + minute + ":";
+    if (second < 10) { TimeString = TimeString + "0"; }
+    TimeString = TimeString + second;
+
+    return TimeString;
+}
+//---------------------------------------------------------------------------   

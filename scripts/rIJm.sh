@@ -2,7 +2,7 @@
 
 # Which imagej do we want to use?
 #IJ="/usr/bin/imagej - x 20000"
-IJ="/home/apr/Apps/Fiji.app/ImageJ-linux64 -macro "
+IJ="/home/apr/Apps/Fiji.app/ImageJ-linux64 --allow-multiple -macro "
 
 # Where did we run the script from ?
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"

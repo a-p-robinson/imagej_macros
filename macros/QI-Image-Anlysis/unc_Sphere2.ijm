@@ -4,7 +4,7 @@ Estimate the PDF of VOI defintions
 */
 
 // --- Variables ----
-var savePath = "/var/home/apr/Science/rois/sphere1/"
+var savePath = "/var/home/apr/Science/rois/sphere2/"
 var zoom_factor = 2.0; // ImageJ zoom factor used to define the centres
 var radius_perc_unc = 0.33; // Sphere radius percentage uncertainty%
 var nRand = 10; // Number of random perturbation of VOI
@@ -17,7 +17,7 @@ macro "unc_Sphere" {
     cameras = newArray("DR", "Optima","CZT-WEHR","CZT-MEHRS");
     //cameras = newArray("DR");
     args = newArray(3);
-    args[1] = "Sphere1";
+    args[1] = "Sphere2";
     args[2] = "NULL";
     
     // Loop through all the cameras
@@ -30,7 +30,7 @@ macro "unc_Sphere" {
         // Save window
         print("END: " + printTime());
         selectWindow("Log");
-        saveAs("Text",savePath+args[0]+"_sphere1_uncertainties.log"); 
+        saveAs("Text",savePath+args[0]+"_sphere2_uncertainties.log"); 
 
         closeAllWindows();
         closeAllImages();
@@ -89,7 +89,9 @@ function run_me(args){
     roiManager("reset");
     
     // Create the sphere ROIS
-    radius = newArray(9.9/2.0, 12.4/2.0, 15.6/2.0, 19.7/2.0, 24.8/2.0, 31.3/2.0);
+    // Volume is ~153ml therefore radius = 33.2 ml
+    radius = newArray(1);
+    radius[0] = 33.0;
     
     // At his point we have read the centres in and cleared the ROI manager.
     // We have also defined the "correct" radi
@@ -133,7 +135,7 @@ function run_me(args){
             roiManager("Sort");
 
             // Save the ROI set
-            roiManager("Save", savePath + cameraID + "_" + phantomID + "_CT_Sphere_" + i+1 + "_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nr + ".zip");
+            roiManager("Save", savePath + cameraID + "_" + phantomID + "_CT_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nr + ".zip");
 
             print("CTotoNM....");
 
@@ -141,7 +143,7 @@ function run_me(args){
             makeNucMedVOI();
 
             // Save the ROI set
-            roiManager("Save", savePath + cameraID + "_" + phantomID + "_CT_Sphere_" + i+1 + "_NM_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nr + ".zip");
+            roiManager("Save", savePath + cameraID + "_" + phantomID + "_CT_NM_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nr + ".zip");
 
             // // Get some stats
             // geometry = newArray(2);

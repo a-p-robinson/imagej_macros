@@ -3,16 +3,16 @@
 Uncertainties on polygon ROIs
 */
 
-var savePath = "/home/apr/Science/rois/x100/"
+var savePath = "/home/apr/Science/rois/2-organ/"
 var zoom_factor = 3.0; // ImageJ zoom factor used to define the centres
-var nRand = 100; // Number of random perturbation of VOI
+var nRand = 10; // Number of random perturbation of VOI
 var seed = 2; // Random number seed
 var threshold_cofm = 0.5; //%
 
 macro "makeNucMedROI" {
 
-    // cameras = newArray("DR", "Optima","CZT-WEHR","CZT-MEHRS");
-    cameras = newArray("DR");
+    cameras = newArray("DR", "Optima","CZT-WEHR","CZT-MEHRS");
+    //cameras = newArray("DR");
     phantoms = newArray(1);
     phantoms[0] = "2-Organ";
     rois = newArray("_CT_spleen","_CT_cortex","_CT_medulla")
@@ -36,12 +36,15 @@ macro "makeNucMedROI" {
 
                 run_me(args);
 
-                // closeAllWindows();
-                // closeAllImages();
-
                 // Save window
+                print("END: " + printTime());
                 selectWindow("Log");
-                saveAs("Text",savePath+"2-organ_uncertainties.log"); 
+                saveAs("Text",savePath+args[0]+"_2-organ_uncertainties.log"); 
+
+                closeAllWindows();
+                closeAllImages();
+
+
 
             }
 
@@ -53,7 +56,7 @@ macro "makeNucMedROI" {
 }
 
 function run_me(args){
-
+    print("START: " + printTime());
     print("savePath = " + savePath);
     print("zoom_factor = " + zoom_factor);
     print("nRand = " + nRand);

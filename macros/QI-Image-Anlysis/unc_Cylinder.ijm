@@ -3,13 +3,14 @@
 Define a cylindrical ROI based on the centre of the phantom using CT
 */
 
-var savePath = "/var/home/apr/Science/rois/x100_Cylinder/"
+var savePath = "/var/home/apr/Science/rois/cylinder/"
+var zoom_factor = 1.0; // ImageJ zoom factor used to define the centres
 var radius_perc_unc = 1.0  // Sphere radius percentage uncertainty (%)
 var height_perc_unc = 1.0; // Cylinder height percentage uncertainty (%)
 var unc_threshold = 10; // Uncertainty on CT threshold (%)
 var unc_profile = 5; // Uncertainty on profile value (%)
 
-var nRand = 100; // Number of random perturbation of VOI
+var nRand = 10; // Number of random perturbation of VOI
 var seed = 2; // Random number seed
 
 macro "unc_Cylinder" {
@@ -28,19 +29,22 @@ macro "unc_Cylinder" {
         print(cameras[c]);
         run_me(args);
 
-        // closeAllWindows();
+        // Save window
+        print("END: " + printTime());
+        selectWindow("Log");
+        saveAs("Text",savePath+args[0]+"_cylinder_uncertainties.log"); 
+
+        closeAllWindows();
         closeAllImages();
 
     }
 
-    // Save window
-    selectWindow("Log");
-    saveAs("Text",savePath+"cylinder_uncertainties.log"); 
+
     
 }
 
 function run_me(args){
-
+    print("START: " + printTime());
     print("unc_threshold = " + unc_threshold + "%");
     print("unc_profile = " + unc_profile + "%");
     print("nRand = " + nRand);
@@ -143,7 +147,7 @@ function run_me(args){
         createCylinderRand(centre_x[nz], centre_y[nz], centre_z[nz], new_phantomRadius, new_phantomHeight);
 
         // Save the CT ROI dataset
-        roiManager("Save", savePath + cameraID + "_" + phantomID + roiID + "_RoiSet_XYZ_seed_" + seed + "_nr_" + nz + ".zip");
+        roiManager("Save", savePath + cameraID + "_" + phantomID + roiID + "_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nz + ".zip");
 
         print("CTotoNM....");
 
@@ -151,8 +155,7 @@ function run_me(args){
         makeNucMedVOI();
         
         // Save the CT ROI dataset
-        roiManager("Save", savePath + cameraID + "_" + phantomID + roiID + "_NM_RoiSet_XYZ_seed_" + seed + "_nr_" + nz + ".zip");
-
+        roiManager("Save", savePath + cameraID + "_" + phantomID + roiID + "_NM_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nz + ".zip");
 
     }
 

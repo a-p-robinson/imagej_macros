@@ -7,21 +7,19 @@ var DATA_DIR = "/home/apr/Science/GE-RSCH/QI/data/Reconstruction/QI_01_09_22/";
 var RESULTS_DIR = "/home/apr/Science/GE-RSCH/QI/analysis-clean/image-analysis/results/";
 
 // --- Variables ----
-var savePath = "/var/home/apr/Science/rois/cylinder/"
-var zoom_factor = 1.0;
+var savePath = "/home/apr/Science/rois/sphere2/"
+var zoom_factor = 2.0; // ImageJ zoom factor used to define the centres
 var nRand = 10; // Number of random perturbation of VOI
 var seed = 2; // Random number seed
 var sub_set = 10;
 
 macro "loop_all_data_unc" {
 
-
-    //cameras = newArray("DR", "Optima","CZT-WEHR","CZT-MEHRS");
     cameraID = "DR";
     windowName = "EM2";
     // phantoms = newArray("Cylinder","Sphere1","Sphere2","2-Organ");
     phantoms = newArray(1);
-    phantoms[0] = "Cylinder"
+    phantoms[0] = "Sphere2"
 
     //corrections = newArray("NC","AC","ACSC");
     corrections = newArray(1);
@@ -101,7 +99,8 @@ macro "loop_all_data_unc" {
                 
                 // Loop through rois
                 // We have a lot of ROIS to go through now.....!
-
+                m_nVoxels = 0;
+                
                 for (r = 0; r < rois.length; r++){
             
                     // Get the "true" measurand value
@@ -110,7 +109,7 @@ macro "loop_all_data_unc" {
                     selectWindow(itt[i]);
                     m_voiCounts = countsROImanager();
                     m_geometry = newArray(2);
-                    m_geometry = getVolumeArea();
+                    m_geometry = getVolumeArea();                
                     m_nVoxels = voxelsROImanager();
 
                     roiManager("reset")
@@ -125,7 +124,7 @@ macro "loop_all_data_unc" {
                     for (nr = 0; nr < sub_set; nr++){
 
                         // Construct the file name
-                        roiFile = savePath + cameraID + "_" + phantomID + rois[r] + "_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nr + ".zip";
+                        roiFile = savePath + cameraID+ "_" + phantomID + rois[r] + "_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nr + ".zip";
                         print(roiFile);
                         
                         // Open the ROI
@@ -171,7 +170,7 @@ macro "loop_all_data_unc" {
                     Array.getStatistics(pdf_nVoxels, min_nVoxels, max_nVoxels, mean_nVoxels, stdDev_nVoxels);
 
                     selectWindow("Uncertainties");
-                    Table.set("Camera", kk, cameraID); windowName +
+                    Table.set("Camera", kk, cameraID); 
                     Table.set("Energy", kk, windowName);
                     Table.set("Phantom", kk, phantoms[p]);
                     Table.set("Correction", kk, corrections[c]);
@@ -216,13 +215,13 @@ macro "loop_all_data_unc" {
     // Save Tables
     selectWindow("VOI");
     Table.update;
-    Table.save(savePath + cameraID + "_" + phantomID + "_" + windowName + "_" + nRand + "_" + sub_set + "_VOIstats.csv"); 
+    Table.save(savePath + cameraID + "_" + windowName + "_" + nRand + "_" + sub_set + "_VOIstats.csv"); 
     selectWindow("Uncertainties");
     Table.update;
-    Table.save(savePath + cameraID + "_" + phantomID + "_" + windowName + "_" + nRand + "_" + sub_set + "_VOIuncertainties.csv"); 
+    Table.save(savePath + cameraID + "_" + windowName + "_" + nRand + "_" + sub_set + "_VOIuncertainties.csv"); 
     selectWindow("Whole Image");
     Table.update;
-    Table.save(savePath + cameraID + "_" + phantomID + "_" + windowName + "_" + nRand + "_" + sub_set + "_WholeImagestats.csv"); 
+    Table.save(savePath + cameraID + "_" + windowName + "_" + nRand + "_" + sub_set + "_WholeImagestats.csv"); 
 
 
 }

@@ -7,11 +7,11 @@ var DATA_DIR = "/home/apr/Science/GE-RSCH/QI/data/Reconstruction/QI_01_09_22/";
 var RESULTS_DIR = "/home/apr/Science/GE-RSCH/QI/analysis-clean/image-analysis/results/";
 
 // --- Variables ----
-var savePath = "/home/apr/Science/rois/x1000/"
+var savePath = "/home/apr/Science/rois/sphere1/"
 var zoom_factor = 2.0; // ImageJ zoom factor used to define the centres
-var nRand = 1000; // Number of random perturbation of VOI
+var nRand = 10; // Number of random perturbation of VOI
 var seed = 2; // Random number seed
-var sub_set = 900;
+var sub_set = 10;
 
 macro "loop_all_data_unc" {
 
@@ -99,6 +99,7 @@ macro "loop_all_data_unc" {
                 
                 // Loop through rois
                 // We have a lot of ROIS to go through now.....!
+                m_nVoxels = 0;
 
                 for (r = 0; r < rois.length; r++){
             
@@ -109,12 +110,15 @@ macro "loop_all_data_unc" {
                     m_voiCounts = countsROImanager();
                     m_geometry = newArray(2);
                     m_geometry = getVolumeArea();
-                    roiManager("reset")
+                    m_nVoxels = voxelsROImanager();
+
+                    roiManager("reset");
 
                     // Array to store the PDF
                     pdf_voiCounts = newArray(sub_set);
                     pdf_area = newArray(sub_set);
                     pdf_volume = newArray(sub_set);
+                    pdf_nVoxels = newArray(sub_set);
 
                     // Loop through the VOI perturbations
                     for (nr = 0; nr < sub_set; nr++){
@@ -132,6 +136,7 @@ macro "loop_all_data_unc" {
                         voiCounts = countsROImanager();
                         geometry = newArray(2);
                         geometry = getVolumeArea();
+                        nVoxels = voxelsROImanager();
 
                         // Close VOI
                         roiManager("reset")
@@ -140,6 +145,8 @@ macro "loop_all_data_unc" {
                         pdf_voiCounts[nr] = voiCounts;
                         pdf_volume[nr] = geometry[0];
                         pdf_area[nr] = geometry[1];
+                        pdf_nVoxels[nr] = nVoxels;
+
                         
                         // Save results to table
                         selectWindow("VOI");
@@ -161,9 +168,10 @@ macro "loop_all_data_unc" {
                     Array.getStatistics(pdf_voiCounts, min_voiCounts, max_voiCounts, mean_voiCounts, stdDev_voiCounts);
                     Array.getStatistics(pdf_volume, min_volume, max_volume, mean_volume, stdDev_volume);
                     Array.getStatistics(pdf_area, min_area, max_area, mean_area, stdDev_area);
+                    Array.getStatistics(pdf_nVoxels, min_nVoxels, max_nVoxels, mean_nVoxels, stdDev_nVoxels);
 
                     selectWindow("Uncertainties");
-                    Table.set("Camera", kk, cameraID); windowName +
+                    Table.set("Camera", kk, cameraID); 
                     Table.set("Energy", kk, windowName);
                     Table.set("Phantom", kk, phantoms[p]);
                     Table.set("Correction", kk, corrections[c]);
@@ -172,7 +180,7 @@ macro "loop_all_data_unc" {
                     Table.set("VOI", kk, rois[r]);
                     Table.set("nRand", kk, sub_set);                        
                     
-                    Table.set("Counts", kk, m_voiCounts); windowName +
+                    Table.set("Counts", kk, m_voiCounts);                    
                     Table.set("Mean(counts)", kk, mean_voiCounts);
                     Table.set("StdDev(counts)", kk, stdDev_voiCounts);
                     Table.set("u(counts) [%]", kk, 100.0*(stdDev_voiCounts/mean_voiCounts));
@@ -186,6 +194,11 @@ macro "loop_all_data_unc" {
                     Table.set("Mean(area)", kk, mean_area);
                     Table.set("StdDev(area)", kk, stdDev_area);
                     Table.set("u(area) [%]", kk, 100.0*(stdDev_area/mean_area));
+
+                    Table.set("nVoxels", kk, m_nVoxels);
+                    Table.set("Mean (nVoxels)", kk, mean_nVoxels);
+                    Table.set("StdDev (nVoxels)", kk, stdDev_nVoxels);
+                    Table.set("u(nVoxels) [%]", kk, 100.0*(stdDev_nVoxels/mean_nVoxels));
 
                     kk++;
 
