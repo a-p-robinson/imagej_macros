@@ -7,7 +7,7 @@ Estimate the PDF of VOI defintions
 var savePath = "/var/home/apr/Science/rois/sphere1/"
 var zoom_factor = 2.0; // ImageJ zoom factor used to define the centres
 var radius_perc_unc = 0.33; // Sphere radius percentage uncertainty%
-var nRand = 10; // Number of random perturbation of VOI
+var nRand = 1000; // Number of random perturbation of VOI
 var seed = 2; // Random number seed
 var doRadiusUnc = 1;
 var doPositionUnc = 1;

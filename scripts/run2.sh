@@ -1,12 +1,12 @@
 #!/bin/bash
 
 ./scripts/rIJm.sh macros/QI-Image-Anlysis/unc_Sphere.ijm &
-sleep 5
-./scripts/rIJm.sh macros/QI-Image-Anlysis/unc_Cylinder.ijm&
-sleep 10
-./scripts/rIJm.sh macros/QI-Image-Anlysis/unc_2-organ.ijm&
-sleep 15
-./scripts/rIJm.sh macros/QI-Image-Anlysis/unc_Sphere2.ijm&
+# sleep 5
+# ./scripts/rIJm.sh macros/QI-Image-Anlysis/unc_Cylinder.ijm&
+# sleep 10
+# ./scripts/rIJm.sh macros/QI-Image-Anlysis/unc_2-organ.ijm&
+# sleep 15
+# ./scripts/rIJm.sh macros/QI-Image-Anlysis/unc_Sphere2.ijm&
 
 
 

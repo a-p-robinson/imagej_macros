@@ -9,9 +9,9 @@ var RESULTS_DIR = "/home/apr/Science/GE-RSCH/QI/analysis-clean/image-analysis/re
 // --- Variables ----
 var savePath = "/var/home/apr/Science/rois/cylinder/"
 var zoom_factor = 1.0;
-var nRand = 10; // Number of random perturbation of VOI
+var nRand = 1000; // Number of random perturbation of VOI
 var seed = 2; // Random number seed
-var sub_set = 10;
+var sub_set = 50;
 
 macro "loop_all_data_unc" {
 

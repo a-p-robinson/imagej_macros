@@ -5,7 +5,7 @@ Uncertainties on polygon ROIs
 
 var savePath = "/home/apr/Science/rois/2-organ/"
 var zoom_factor = 3.0; // ImageJ zoom factor used to define the centres
-var nRand = 10; // Number of random perturbation of VOI
+var nRand = 1000; // Number of random perturbation of VOI
 var seed = 2; // Random number seed
 var threshold_cofm = 0.5; //%
 

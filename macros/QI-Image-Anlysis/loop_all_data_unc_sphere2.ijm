@@ -9,9 +9,9 @@ var RESULTS_DIR = "/home/apr/Science/GE-RSCH/QI/analysis-clean/image-analysis/re
 // --- Variables ----
 var savePath = "/home/apr/Science/rois/sphere2/"
 var zoom_factor = 2.0; // ImageJ zoom factor used to define the centres
-var nRand = 10; // Number of random perturbation of VOI
+var nRand = 1000; // Number of random perturbation of VOI
 var seed = 2; // Random number seed
-var sub_set = 10;
+var sub_set = 1000;
 
 macro "loop_all_data_unc" {
 

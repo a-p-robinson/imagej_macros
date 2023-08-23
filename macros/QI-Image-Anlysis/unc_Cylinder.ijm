@@ -10,7 +10,7 @@ var height_perc_unc = 1.0; // Cylinder height percentage uncertainty (%)
 var unc_threshold = 10; // Uncertainty on CT threshold (%)
 var unc_profile = 5; // Uncertainty on profile value (%)
 
-var nRand = 10; // Number of random perturbation of VOI
+var nRand = 1000; // Number of random perturbation of VOI
 var seed = 2; // Random number seed
 
 macro "unc_Cylinder" {
