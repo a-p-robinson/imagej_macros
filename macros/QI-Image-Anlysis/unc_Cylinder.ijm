@@ -3,7 +3,7 @@
 Define a cylindrical ROI based on the centre of the phantom using CT
 */
 
-var savePath = "/var/home/apr/Science/rois/cylinder/"
+var savePath = "/home/apr/Science/rois/cylinder/"
 var zoom_factor = 1.0; // ImageJ zoom factor used to define the centres
 var radius_perc_unc = 1.0  // Sphere radius percentage uncertainty (%)
 var height_perc_unc = 1.0; // Cylinder height percentage uncertainty (%)
@@ -15,8 +15,10 @@ var seed = 2; // Random number seed
 
 macro "unc_Cylinder" {
 
-    cameras = newArray("DR", "Optima","CZT-WEHR","CZT-MEHRS");
-    // cameras = newArray("DR");
+    setBatchMode(true);
+
+    //cameras = newArray("DR", "Optima","CZT-WEHR","CZT-MEHRS");
+    cameras = newArray("DR");
     args = newArray(3);
     args[1] = "Cylinder";
     args[2] = "_CT";
@@ -108,6 +110,7 @@ function run_me(args){
     centre_y = newArray(nRand);
 
     for (nz = 0; nz < nRand; nz++){
+        print("*** nRand: " + nz + " ***");
         run("Select None");
         centre_z[nz] = centreProfileRand(ct_z, ct_z_half, unc_profile, unc_threshold);
         //centre_z[nz] = centreProfile(ct_z, ct_z_half);
@@ -149,7 +152,7 @@ function run_me(args){
         // Save the CT ROI dataset
         roiManager("Save", savePath + cameraID + "_" + phantomID + roiID + "_RoiSet_XYZ_zoom_" + zoom_factor + "_seed_" + seed + "_nr_" + nz + ".zip");
 
-        print("CTotoNM....");
+        //print("CTotoNM....");
 
         // Translate to a NM ROI
         makeNucMedVOI();
