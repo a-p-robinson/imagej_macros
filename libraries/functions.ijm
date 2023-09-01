@@ -286,12 +286,12 @@ function centreProfileRand(profile, threshold, unc_profile, unc_threshold){
         p_two[i] = getGaussian(profile[i],unc_profile/100.0*profile[i]);
     }
 
-    //Array.print(p_two);
+    // Array.print(p_two);
     //Plot.create("New profile", "X", "Y", p_two);
 
     // Randomly vary the threshold
     new_threshold = getRectangular(threshold,unc_threshold/100.0*threshold);
-    //print("new_threshold = " + new_threshold);
+    // print("new_threshold = " + new_threshold);
 
     for (i = 0; i < p_two.length / 2; i++){
         if (p_two[i] < new_threshold){
@@ -302,7 +302,7 @@ function centreProfileRand(profile, threshold, unc_profile, unc_threshold){
         }
     }
     centre = (upper + lower) / 2;
-    //print("lower: " + lower + " upper: " + upper + " centre: " + centre);
+    // print("lower: " + lower + " upper: " + upper + " centre: " + centre);
     
     return centre;
 }

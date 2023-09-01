@@ -3,14 +3,14 @@
 Define a cylindrical ROI based on the centre of the phantom using CT
 */
 
-var savePath = "/home/apr/Science/rois/cylinder/"
+var savePath = "/home/apr/Science/rois/cylinder-7per/"
 var zoom_factor = 1.0; // ImageJ zoom factor used to define the centres
 var radius_perc_unc = 1.0  // Sphere radius percentage uncertainty (%)
 var height_perc_unc = 1.0; // Cylinder height percentage uncertainty (%)
-var unc_threshold = 10; // Uncertainty on CT threshold (%)
+var unc_threshold = 7; // Uncertainty on CT threshold (%)
 var unc_profile = 5; // Uncertainty on profile value (%)
 
-var nRand = 1000; // Number of random perturbation of VOI
+var nRand = 500; // Number of random perturbation of VOI
 var seed = 2; // Random number seed
 
 macro "unc_Cylinder" {
@@ -85,6 +85,8 @@ function run_me(args){
     ct_z_min = Array.findMinima(ct_z,0.00001);
     ct_z_half = (ct_z[ct_z_max[0]]+ct_z[ct_z_min[0]])/2;
 
+    // print("original threshold = " + ct_z_half);
+
     // Find the "real" centre (x,y,z)
     m_centre_z = centreProfile(ct_z, ct_z_half);
 
@@ -145,6 +147,9 @@ function run_me(args){
         selectWindow("CT");
         run("Select None");
         roiManager("reset");
+
+        // Dump the final variables to screen
+        print("[" + nz + "]: " + centre_x[nz] + " " + centre_y[nz] + " " + centre_z[nz] + " " + new_phantomRadius + " " + new_phantomHeight);
 
         // Using a modified version which randomly decides on the last slice for even numbers of slices.
         createCylinderRand(centre_x[nz], centre_y[nz], centre_z[nz], new_phantomRadius, new_phantomHeight);
