@@ -11,8 +11,10 @@ var threshold_cofm = 0.5; //%
 
 macro "makeNucMedROI" {
 
-    cameras = newArray("DR", "Optima","CZT-WEHR","CZT-MEHRS");
-    //cameras = newArray("DR");
+    setBatchMode(true);
+
+    //cameras = newArray("DR", "Optima","CZT-WEHR","CZT-MEHRS");
+    cameras = newArray("DR");
     phantoms = newArray(1);
     phantoms[0] = "2-Organ";
     rois = newArray("_CT_spleen","_CT_cortex","_CT_medulla")

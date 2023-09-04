@@ -7,11 +7,11 @@ var DATA_DIR = "/home/apr/Science/GE-RSCH/QI/data/Reconstruction/QI_01_09_22/";
 var RESULTS_DIR = "/home/apr/Science/GE-RSCH/QI/analysis-clean/image-analysis/results/";
 
 // --- Variables ----
-var savePath = "/home/apr/Science/rois/cylinder-8per/"
+var savePath = "/home/apr/Science/rois/cylinder-7per/"
 var zoom_factor = 1.0;
 var nRand = 1000; // Number of random perturbation of VOI
 var seed = 2; // Random number seed
-var sub_set = 500;
+var sub_set = 1000;
 
 macro "loop_all_data_unc" {
 
