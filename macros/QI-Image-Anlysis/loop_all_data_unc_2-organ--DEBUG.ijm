@@ -7,7 +7,7 @@ var DATA_DIR = "/home/apr/Science/GE-RSCH/QI/data/Reconstruction/QI_01_09_22/";
 var RESULTS_DIR = "/home/apr/Science/GE-RSCH/QI/analysis-clean/image-analysis/results/";
 
 // --- Variables ----
-var savePath = "/home/apr/Science/rois/home/old/2-organ/"
+var savePath = "/home/apr/Science/rois/2-organ/"
 var zoom_factor = 3.0; // ImageJ zoom factor used to define the centres
 var nRand = 1000; // Number of random perturbation of VOI
 var seed = 2; // Random number seed

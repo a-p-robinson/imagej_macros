@@ -7,7 +7,7 @@ var DATA_DIR = "/home/apr/Science/GE-RSCH/QI/data/Reconstruction/QI_01_09_22/";
 var RESULTS_DIR = "/home/apr/Science/GE-RSCH/QI/analysis-clean/image-analysis/results/";
 
 // --- Variables ----
-var savePath = "/home/apr/Science/rois/sphere2/"
+var savePath = "/home/apr/Science/rois/sphere1/"
 var zoom_factor = 2.0; // ImageJ zoom factor used to define the centres
 var nRand = 1000; // Number of random perturbation of VOI
 var seed = 2; // Random number seed
@@ -22,7 +22,7 @@ macro "loop_all_data_unc" {
     windowName = "EM2";
     // phantoms = newArray("Cylinder","Sphere1","Sphere2","2-Organ");
     phantoms = newArray(1);
-    phantoms[0] = "Sphere2"
+    phantoms[0] = "Sphere1"
 
     //corrections = newArray("NC","AC","ACSC");
     corrections = newArray(1);
